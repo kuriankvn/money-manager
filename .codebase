@@ -1,0 +1,7 @@
+language: python
+
+preferences:
+  comments: false
+  style: simple
+  complexity: minimal
+  tests: on_request
