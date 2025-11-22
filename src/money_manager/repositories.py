@@ -7,321 +7,278 @@ from money_manager.models import Category, Transaction, TransactionType, User
 
 class UserRepository:
     def create(self, user: User) -> str:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute("INSERT INTO users (uid, name) VALUES (?, ?)", (user.uid, user.name))
-        conn.commit()
-        conn.close()
+        connection.commit()
+        connection.close()
         return user.uid
     
     def get_by_id(self, uid: str) -> Optional[User]:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute("SELECT uid, name FROM users WHERE uid = ?", (uid,))
         row = cursor.fetchone()
-        conn.close()
+        connection.close()
         
         if row:
             return User(uid=row[0], name=row[1])
         return None
     
     def get_all(self) -> list[User]:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute("SELECT uid, name FROM users")
         rows: list[Any] = cursor.fetchall()
-        conn.close()
+        connection.close()
         
         return [User(uid=row[0], name=row[1]) for row in rows]
     
     def update(self, user: User) -> bool:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute("UPDATE users SET name = ? WHERE uid = ?", (user.name, user.uid))
         affected: int = cursor.rowcount
-        conn.commit()
-        conn.close()
+        connection.commit()
+        connection.close()
         return affected > 0
     
     def delete(self, uid: str) -> bool:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute("DELETE FROM users WHERE uid = ?", (uid,))
         affected: int = cursor.rowcount
-        conn.commit()
-        conn.close()
+        connection.commit()
+        connection.close()
         return affected > 0
 
 
 class CategoryRepository:
     def create(self, category: Category) -> str:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
-        parent_uid: Optional[str] = category.parent_category.uid if category.parent_category else None
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute(
-            "INSERT INTO categories (uid, type, name, parent_category) VALUES (?, ?, ?, ?)",
-            (category.uid, category.type.value, category.name, parent_uid)
-        )
-        conn.commit()
-        conn.close()
+            "INSERT INTO categories (uid, name, type) VALUES (?, ?, ?)",
+            (category.uid, category.name, category.type.value))
+        connection.commit()
+        connection.close()
         return category.uid
     
     def get_by_id(self, uid: str) -> Optional[Category]:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute(
-            "SELECT uid, type, name, parent_category FROM categories WHERE uid = ?",
-            (uid,)
-        )
+            "SELECT uid, name, type FROM categories WHERE uid = ?",
+            (uid,))
         row = cursor.fetchone()
-        conn.close()
+        connection.close()
         
         if row:
-            parent_category: Optional[Category] = self.get_by_id(uid=row[3]) if row[3] else None
             return Category(
                 uid=row[0],
-                type=TransactionType(value=row[1]),
-                name=row[2],
-                parent_category=parent_category
-            )
+                name=row[1],
+                type=TransactionType(value=row[2]))
         return None
     
     def get_all(self) -> list[Category]:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
-        cursor.execute("SELECT uid, type, name, parent_category FROM categories")
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
+        cursor.execute("SELECT uid, name, type FROM categories")
         rows: list[Any] = cursor.fetchall()
-        conn.close()
+        connection.close()
         
-        categories: list[Any] = []
+        categories: list[Category] = []
         for row in rows:
-            parent_category: Optional[Category] = self.get_by_id(uid=row[3]) if row[3] else None
             categories.append(Category(
                 uid=row[0],
-                type=TransactionType(value=row[1]),
-                name=row[2],
-                parent_category=parent_category
-            ))
+                name=row[1],
+                type=TransactionType(value=row[2])))
         return categories
     
     def get_by_type(self, transaction_type: TransactionType) -> list[Category]:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute(
-            "SELECT uid, type, name, parent_category FROM categories WHERE type = ?",
-            (transaction_type.value,)
-        )
+            "SELECT uid, name, type FROM categories WHERE type = ?",
+            (transaction_type.value,))
         rows: list[Any] = cursor.fetchall()
-        conn.close()
+        connection.close()
         
-        categories:list[Any] = []
+        categories: list[Category] = []
         for row in rows:
-            parent_category: Optional[Category] = self.get_by_id(uid=row[3]) if row[3] else None
             categories.append(Category(
                 uid=row[0],
-                type=TransactionType(value=row[1]),
-                name=row[2],
-                parent_category=parent_category
-            ))
+                name=row[1],
+                type=TransactionType(value=row[2])))
         return categories
     
     def update(self, category: Category) -> bool:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
-        
-        parent_uid: Optional[str] = category.parent_category.uid if category.parent_category else None
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         
         cursor.execute(
-            "UPDATE categories SET type = ?, name = ?, parent_category = ? WHERE uid = ?",
-            (category.type.value, category.name, parent_uid, category.uid)
-        )
+            "UPDATE categories SET name = ?, type = ? WHERE uid = ?",
+            (category.name, category.type.value, category.uid))
         affected: int = cursor.rowcount
-        conn.commit()
-        conn.close()
+        connection.commit()
+        connection.close()
         return affected > 0
     
     def delete(self, uid: str) -> bool:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute("DELETE FROM categories WHERE uid = ?", (uid,))
         affected: int = cursor.rowcount
-        conn.commit()
-        conn.close()
+        connection.commit()
+        connection.close()
         return affected > 0
 
 
 class TransactionRepository:
     def __init__(self) -> None:
+        self.user_repo: UserRepository = UserRepository()
         self.category_repo: CategoryRepository = CategoryRepository()
     
     def create(self, transaction: Transaction) -> str:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute(
-            """INSERT INTO transactions 
-            (uid, user_uid, amount, date_time, type, category) 
-            VALUES (?, ?, ?, ?, ?, ?)""",
-            (
-                transaction.uid,
-                transaction.user_uid,
-                transaction.amount,
-                transaction.date_time,
-                transaction.type.value,
-                transaction.category.uid
-            )
-        )
-        conn.commit()
-        conn.close()
+            """INSERT INTO transactions (uid, amount, datetime, user_uid, category_uid) VALUES (?, ?, ?, ?, ?)""",
+            (transaction.uid, transaction.amount, transaction.datetime, transaction.user.uid, transaction.category.uid))
+        connection.commit()
+        connection.close()
         return transaction.uid
     
     def get_by_id(self, uid: str) -> Optional[Transaction]:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute(
-            """SELECT uid, user_uid, amount, date_time, type, category 
-            FROM transactions WHERE uid = ?""",
-            (uid,)
-        )
+            """SELECT uid, amount, datetime, user_uid, category_uid FROM transactions WHERE uid = ?""",
+            (uid,))
         row = cursor.fetchone()
-        conn.close()
+        connection.close()
         
         if row:
-            category: Optional[Category] = self.category_repo.get_by_id(uid=row[5])
+            category: Optional[Category] = self.category_repo.get_by_id(uid=row[4])
             if not category:
+                return None
+            user: Optional[User] = self.user_repo.get_by_id(uid=row[3])
+            if not user:
                 return None
             return Transaction(
                 uid=row[0],
-                user_uid=row[1],
-                amount=row[2],
-                date_time=row[3],
-                type=TransactionType(value=row[4]),
-                category=category
-            )
+                amount=row[1],
+                datetime=row[2],
+                user=user,
+                category=category)
         return None
     
     def get_all(self) -> list[Transaction]:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
-        cursor.execute("SELECT uid, user_uid, amount, date_time, type, category FROM transactions")
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
+        cursor.execute("SELECT uid, amount, datetime, user_uid, category_uid FROM transactions")
         rows: list[Any] = cursor.fetchall()
-        conn.close()
+        connection.close()
         
-        transactions: list[Any] = []
+        transactions: list[Transaction] = []
         for row in rows:
-            category: Optional[Category] = self.category_repo.get_by_id(uid=row[5])
-            if category:
+            user: Optional[User] = self.user_repo.get_by_id(uid=row[3])
+            category: Optional[Category] = self.category_repo.get_by_id(uid=row[4])
+            if user and category:
                 transactions.append(Transaction(
                     uid=row[0],
-                    user_uid=row[1],
-                    amount=row[2],
-                    date_time=row[3],
-                    type=TransactionType(value=row[4]),
-                    category=category
-                ))
+                    amount=row[1],
+                    datetime=row[2],
+                    user=user,
+                    category=category))
         return transactions
     
     def get_by_user(self, user_uid: str) -> list[Transaction]:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute(
-            """SELECT uid, user_uid, amount, date_time, type, category 
-            FROM transactions WHERE user_uid = ?""",
-            (user_uid,)
-        )
+            """SELECT uid, amount, datetime, user_uid, category_uid FROM transactions WHERE user_uid = ?""",
+            (user_uid,))
         rows: list[Any] = cursor.fetchall()
-        conn.close()
-        
-        transactions: list[Any] = []
-        for row in rows:
-            category: Optional[Category] = self.category_repo.get_by_id(uid=row[5])
-            if category:
-                transactions.append(Transaction(
-                    uid=row[0],
-                    user_uid=row[1],
-                    amount=row[2],
-                    date_time=row[3],
-                    type=TransactionType(value=row[4]),
-                    category=category
-                ))
-        return transactions
-    
-    def get_by_user_and_type(
-        self,
-        user_uid: str,
-        transaction_type: TransactionType
-    ) -> list[Transaction]:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
-        cursor.execute(
-            """SELECT uid, user_uid, amount, date_time, type, category
-            FROM transactions WHERE user_uid = ? AND type = ?""",
-            (user_uid, transaction_type.value)
-        )
-        rows: list[Any] = cursor.fetchall()
-        conn.close()
+        connection.close()
         
         transactions: list[Transaction] = []
         for row in rows:
-            category: Optional[Category] = self.category_repo.get_by_id(uid=row[5])
-            if category:
+            user: Optional[User] = self.user_repo.get_by_id(uid=row[3])
+            category: Optional[Category] = self.category_repo.get_by_id(uid=row[4])
+            if user and category:
                 transactions.append(Transaction(
                     uid=row[0],
-                    user_uid=row[1],
-                    amount=row[2],
-                    date_time=row[3],
-                    type=TransactionType(value=row[4]),
-                    category=category
-                ))
+                    amount=row[1],
+                    datetime=row[2],
+                    user=user,
+                    category=category))
         return transactions
     
-    def get_by_user_type_and_category(
-        self,
-        user_uid: str,
-        transaction_type: TransactionType,
-        category_uid: str
-    ) -> list[Transaction]:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+    def get_by_user_and_type(self, user_uid: str, transaction_type: TransactionType) -> list[Transaction]:
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute(
-            """SELECT uid, user_uid, amount, date_time, type, category
-            FROM transactions WHERE user_uid = ? AND type = ? AND category = ?""",
-            (user_uid, transaction_type.value, category_uid)
-        )
+            """SELECT t.uid, t.amount, t.datetime, t.user_uid, t.category_uid FROM transactions t
+            JOIN categories c ON t.category_uid = c.uid WHERE t.user_uid = ? AND c.type = ?""",
+            (user_uid, transaction_type.value))
         rows: list[Any] = cursor.fetchall()
-        conn.close()
+        connection.close()
         
         transactions: list[Transaction] = []
         for row in rows:
-            category: Optional[Category] = self.category_repo.get_by_id(uid=row[5])
-            if category:
+            user: Optional[User] = self.user_repo.get_by_id(uid=row[3])
+            category: Optional[Category] = self.category_repo.get_by_id(uid=row[4])
+            if user and category:
                 transactions.append(Transaction(
                     uid=row[0],
-                    user_uid=row[1],
-                    amount=row[2],
-                    date_time=row[3],
-                    type=TransactionType(value=row[4]),
-                    category=category
-                ))
+                    amount=row[1],
+                    datetime=row[2],
+                    user=user,
+                    category=category))
+        return transactions
+    
+    def get_by_user_type_and_category(self, user_uid: str, transaction_type: TransactionType, category_uid: str) -> list[Transaction]:
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
+        cursor.execute(
+            """SELECT t.uid, t.amount, t.datetime, t.user_uid, t.category_uid FROM transactions t
+            JOIN categories c ON t.category_uid = c.uid WHERE t.user_uid = ? AND c.type = ? AND t.category_uid = ?""",
+            (user_uid, transaction_type.value, category_uid))
+        rows: list[Any] = cursor.fetchall()
+        connection.close()
+        
+        transactions: list[Transaction] = []
+        for row in rows:
+            user: Optional[User] = self.user_repo.get_by_id(uid=row[3])
+            category: Optional[Category] = self.category_repo.get_by_id(uid=row[4])
+            if user and category:
+                transactions.append(Transaction(
+                    uid=row[0],
+                    amount=row[1],
+                    datetime=row[2],
+                    user=user,
+                    category=category))
         return transactions
     
     def update(self, transaction: Transaction) -> bool:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         
         cursor.execute(
-            """UPDATE transactions SET user_uid = ?, amount = ?, date_time = ?, type = ?, category = ? WHERE uid = ?""",
-            (transaction.user_uid, transaction.amount, transaction.date_time, transaction.type.value, transaction.category.uid, transaction.uid)
+            """UPDATE transactions SET amount = ?, datetime = ?, user_uid = ?, category_uid = ? WHERE uid = ?""",
+            (transaction.amount, transaction.datetime, transaction.user.uid, transaction.category.uid, transaction.uid)
         )
         affected: int = cursor.rowcount
-        conn.commit()
-        conn.close()
+        connection.commit()
+        connection.close()
         return affected > 0
     
     def delete(self, uid: str) -> bool:
-        conn: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = conn.cursor()
+        connection: sqlite3.Connection = get_connection()
+        cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute("DELETE FROM transactions WHERE uid = ?", (uid,))
         affected: int = cursor.rowcount
-        conn.commit()
-        conn.close()
+        connection.commit()
+        connection.close()
         return affected > 0

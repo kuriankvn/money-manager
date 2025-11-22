@@ -17,16 +17,14 @@ class User:
 @dataclass
 class Category:
     uid: str
-    type: TransactionType
     name: str
-    parent_category: Optional["Category"]
+    type: TransactionType
 
 
 @dataclass
 class Transaction:
     uid: str
-    user_uid: str
     amount: float
-    date_time: float
-    type: TransactionType
+    datetime: float
+    user: User
     category: Category

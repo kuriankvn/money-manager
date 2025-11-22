@@ -15,31 +15,25 @@ def init_database() -> None:
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             uid TEXT PRIMARY KEY,
-            name TEXT NOT NULL
-        )
+            name TEXT NOT NULL)
     """)
     
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS categories (
             uid TEXT PRIMARY KEY,
-            type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
             name TEXT NOT NULL,
-            parent_category TEXT,
-            FOREIGN KEY (parent_category) REFERENCES categories(uid)
-        )
+            type TEXT NOT NULL CHECK (type IN ('income', 'expense')))
     """)
     
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS transactions (
             uid TEXT PRIMARY KEY,
-            user_uid TEXT NOT NULL,
             amount REAL NOT NULL,
-            date_time REAL NOT NULL,
-            type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
-            category TEXT NOT NULL,
+            datetime REAL NOT NULL,
+            user_uid TEXT NOT NULL,
+            category_uid TEXT NOT NULL,
             FOREIGN KEY (user_uid) REFERENCES users(uid),
-            FOREIGN KEY (category) REFERENCES categories(uid)
-        )
+            FOREIGN KEY (category_uid) REFERENCES categories(uid))
     """)
     
     conn.commit()
