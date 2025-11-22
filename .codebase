@@ -5,6 +5,7 @@ language: python
 preferences:
   # Code Style
   comments: false                    # No inline comments unless absolutely necessary
+  attribution: false                 # No "Made with Bob" or similar comments
   docstrings: minimal                # Only for public APIs, keep brief
   style: simple                      # Prefer readability over cleverness
   complexity: minimal                # Avoid nested logic, keep functions small
