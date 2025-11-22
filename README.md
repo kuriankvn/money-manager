@@ -51,3 +51,6 @@
 - create wheel: `python3 -m build`
 - install wheel: `pip install dist/money_manager-0.1.0-py3-none-any.whl`
 - remove dependencies: `pip uninstall -y money-manager && pip freeze | xargs pip uninstall -y`
+
+## prompt to use .codebase preferences
+`Always read and follow the .codebase file preferences before generating any code`

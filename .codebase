@@ -1,7 +1,34 @@
+# Codebase Preferences for money-manager
+
 language: python
 
 preferences:
-  comments: false
-  style: simple
-  complexity: minimal
-  tests: on_request
+  # Code Style
+  comments: false                    # No inline comments unless absolutely necessary
+  docstrings: minimal                # Only for public APIs, keep brief
+  style: simple                      # Prefer readability over cleverness
+  complexity: minimal                # Avoid nested logic, keep functions small
+  
+  # Code Organization
+  imports: grouped                   # stdlib, third-party, local (separated by blank lines)
+  line_length: 100                   # Black default
+  
+  # Testing
+  tests: on_request                  # Write tests only when explicitly asked
+  
+  # Python Specifics
+  type_hints: true                   # Use type hints for function signatures
+  named_parameters: true             # Use named parameters wherever possible
+  f_strings: true                    # Prefer f-strings over .format() or %
+  comprehensions: simple_only        # Use only when more readable than loops
+  
+  # Error Handling
+  exceptions: explicit               # Catch specific exceptions, not bare except
+  validation: early                  # Validate inputs at function entry
+  
+  # Dependencies
+  external_libs: minimal             # Prefer stdlib when possible
+  
+  # Documentation
+  readme: no_auto_update             # Don't update README automatically
+  changelog: on_major_changes        # Document breaking changes
