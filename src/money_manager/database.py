@@ -28,6 +28,7 @@ def init_database() -> None:
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS transactions (
             uid TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
             amount REAL NOT NULL,
             datetime REAL NOT NULL,
             user_uid TEXT NOT NULL,

@@ -143,8 +143,8 @@ class TransactionRepository:
         connection: sqlite3.Connection = get_connection()
         cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute(
-            """INSERT INTO transactions (uid, amount, datetime, user_uid, category_uid) VALUES (?, ?, ?, ?, ?)""",
-            (transaction.uid, transaction.amount, transaction.datetime, transaction.user.uid, transaction.category.uid))
+            """INSERT INTO transactions (uid, name, amount, datetime, user_uid, category_uid) VALUES (?, ?, ?, ?, ?, ?)""",
+            (transaction.uid, transaction.name, transaction.amount, transaction.datetime, transaction.user.uid, transaction.category.uid))
         connection.commit()
         connection.close()
         return transaction.uid
@@ -153,22 +153,23 @@ class TransactionRepository:
         connection: sqlite3.Connection = get_connection()
         cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute(
-            """SELECT uid, amount, datetime, user_uid, category_uid FROM transactions WHERE uid = ?""",
+            """SELECT uid, name, amount, datetime, user_uid, category_uid FROM transactions WHERE uid = ?""",
             (uid,))
         row = cursor.fetchone()
         connection.close()
         
         if row:
-            category: Optional[Category] = self.category_repo.get_by_id(uid=row[4])
-            if not category:
-                return None
-            user: Optional[User] = self.user_repo.get_by_id(uid=row[3])
+            user: Optional[User] = self.user_repo.get_by_id(uid=row[4])
             if not user:
+                return None
+            category: Optional[Category] = self.category_repo.get_by_id(uid=row[5])
+            if not category:
                 return None
             return Transaction(
                 uid=row[0],
-                amount=row[1],
-                datetime=row[2],
+                name=row[1],
+                amount=row[2],
+                datetime=row[3],
                 user=user,
                 category=category)
         return None
@@ -176,19 +177,20 @@ class TransactionRepository:
     def get_all(self) -> list[Transaction]:
         connection: sqlite3.Connection = get_connection()
         cursor: sqlite3.Cursor = connection.cursor()
-        cursor.execute("SELECT uid, amount, datetime, user_uid, category_uid FROM transactions")
+        cursor.execute("SELECT uid, name, amount, datetime, user_uid, category_uid FROM transactions")
         rows: list[Any] = cursor.fetchall()
         connection.close()
         
         transactions: list[Transaction] = []
         for row in rows:
-            user: Optional[User] = self.user_repo.get_by_id(uid=row[3])
-            category: Optional[Category] = self.category_repo.get_by_id(uid=row[4])
+            user: Optional[User] = self.user_repo.get_by_id(uid=row[4])
+            category: Optional[Category] = self.category_repo.get_by_id(uid=row[5])
             if user and category:
                 transactions.append(Transaction(
                     uid=row[0],
-                    amount=row[1],
-                    datetime=row[2],
+                    name=row[1],
+                    amount=row[2],
+                    datetime=row[3],
                     user=user,
                     category=category))
         return transactions
@@ -197,20 +199,21 @@ class TransactionRepository:
         connection: sqlite3.Connection = get_connection()
         cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute(
-            """SELECT uid, amount, datetime, user_uid, category_uid FROM transactions WHERE user_uid = ?""",
+            """SELECT uid, name, amount, datetime, user_uid, category_uid FROM transactions WHERE user_uid = ?""",
             (user_uid,))
         rows: list[Any] = cursor.fetchall()
         connection.close()
         
         transactions: list[Transaction] = []
         for row in rows:
-            user: Optional[User] = self.user_repo.get_by_id(uid=row[3])
-            category: Optional[Category] = self.category_repo.get_by_id(uid=row[4])
+            user: Optional[User] = self.user_repo.get_by_id(uid=row[4])
+            category: Optional[Category] = self.category_repo.get_by_id(uid=row[5])
             if user and category:
                 transactions.append(Transaction(
                     uid=row[0],
-                    amount=row[1],
-                    datetime=row[2],
+                    name=row[1],
+                    amount=row[2],
+                    datetime=row[3],
                     user=user,
                     category=category))
         return transactions
@@ -219,7 +222,7 @@ class TransactionRepository:
         connection: sqlite3.Connection = get_connection()
         cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute(
-            """SELECT t.uid, t.amount, t.datetime, t.user_uid, t.category_uid FROM transactions t
+            """SELECT t.uid, t.name, t.amount, t.datetime, t.user_uid, t.category_uid FROM transactions t
             JOIN categories c ON t.category_uid = c.uid WHERE t.user_uid = ? AND c.type = ?""",
             (user_uid, transaction_type.value))
         rows: list[Any] = cursor.fetchall()
@@ -227,36 +230,14 @@ class TransactionRepository:
         
         transactions: list[Transaction] = []
         for row in rows:
-            user: Optional[User] = self.user_repo.get_by_id(uid=row[3])
-            category: Optional[Category] = self.category_repo.get_by_id(uid=row[4])
+            user: Optional[User] = self.user_repo.get_by_id(uid=row[4])
+            category: Optional[Category] = self.category_repo.get_by_id(uid=row[5])
             if user and category:
                 transactions.append(Transaction(
                     uid=row[0],
-                    amount=row[1],
-                    datetime=row[2],
-                    user=user,
-                    category=category))
-        return transactions
-    
-    def get_by_user_type_and_category(self, user_uid: str, transaction_type: TransactionType, category_uid: str) -> list[Transaction]:
-        connection: sqlite3.Connection = get_connection()
-        cursor: sqlite3.Cursor = connection.cursor()
-        cursor.execute(
-            """SELECT t.uid, t.amount, t.datetime, t.user_uid, t.category_uid FROM transactions t
-            JOIN categories c ON t.category_uid = c.uid WHERE t.user_uid = ? AND c.type = ? AND t.category_uid = ?""",
-            (user_uid, transaction_type.value, category_uid))
-        rows: list[Any] = cursor.fetchall()
-        connection.close()
-        
-        transactions: list[Transaction] = []
-        for row in rows:
-            user: Optional[User] = self.user_repo.get_by_id(uid=row[3])
-            category: Optional[Category] = self.category_repo.get_by_id(uid=row[4])
-            if user and category:
-                transactions.append(Transaction(
-                    uid=row[0],
-                    amount=row[1],
-                    datetime=row[2],
+                    name=row[1],
+                    amount=row[2],
+                    datetime=row[3],
                     user=user,
                     category=category))
         return transactions
@@ -266,9 +247,8 @@ class TransactionRepository:
         cursor: sqlite3.Cursor = connection.cursor()
         
         cursor.execute(
-            """UPDATE transactions SET amount = ?, datetime = ?, user_uid = ?, category_uid = ? WHERE uid = ?""",
-            (transaction.amount, transaction.datetime, transaction.user.uid, transaction.category.uid, transaction.uid)
-        )
+            """UPDATE transactions SET name = ?, amount = ?, datetime = ?, user_uid = ?, category_uid = ? WHERE uid = ?""",
+            (transaction.name, transaction.amount, transaction.datetime, transaction.user.uid, transaction.category.uid, transaction.uid))
         affected: int = cursor.rowcount
         connection.commit()
         connection.close()

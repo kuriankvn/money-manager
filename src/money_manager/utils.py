@@ -42,7 +42,7 @@ def validate_non_empty(value: str) -> bool:
     return bool(value.strip())
 
 
-def datatime_to_epoc(datetime_str: str) -> float:
+def datetime_to_epoch(datetime_str: str) -> float:
     if not datetime_str.strip():
         return time.time()
     
@@ -53,5 +53,5 @@ def datatime_to_epoc(datetime_str: str) -> float:
         raise ValueError("Invalid date format. Expected: YYYY-MM-DD HH:MM")
 
 
-def epoc_to_datatime(epoch: float) -> str:
+def epoch_to_datetime(epoch: float) -> str:
     return time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(epoch))
