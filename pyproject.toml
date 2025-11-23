@@ -7,19 +7,21 @@ name = "money-manager"
 version = "0.1.0"
 description = "Money manager application"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13"
 keywords = ["money", "expense", "budget", "finance"]
 classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
     "Development Status :: 3 - Alpha",
     "Intended Audience :: End Users/Desktop"
 ]
-dependencies = []
+dependencies = [
+    "python-dotenv==1.2.1",
+]
 
 [project.optional-dependencies]
 dev = ["pytest~=9.0.0"]

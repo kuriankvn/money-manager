@@ -19,7 +19,7 @@
 - rm -rf .venv
 
 ## create local venv
-- python3 -m venv .venv
+- python3.13 -m venv .venv
 - source .venv/bin/activate
 - pip uninstall -y setuptools wheel
 - pip list --outdated --format=json | jq -r '.[].name' | xargs -n1 pip install -U
@@ -48,7 +48,7 @@
 - remove dependencies: `pip uninstall -y money-manager && pip freeze | xargs pip uninstall -y`
 ### using build
 - install build: `pip install build~=1.3.0`
-- create wheel: `python3 -m build`
+- create wheel: `python -m build`
 - install wheel: `pip install dist/money_manager-0.1.0-py3-none-any.whl`
 - remove dependencies: `pip uninstall -y money-manager && pip freeze | xargs pip uninstall -y`
 
@@ -57,9 +57,9 @@
 
 ## run cliapp
 - `pip install -e .` and `money-manager`
-- `PYTHONPATH=src python3 -m money_manager.cli`
-- `PYTHONPATH=src python3 src/money_manager/cli.py`
+- `PYTHONPATH=src python -m money_manager.cli`
+- `PYTHONPATH=src python src/money_manager/cli.py`
 
 ## run cliapp testcases
 - `pip install -e ".[dev]"` and `pytest tests/test_cli.py -v`
-- `PYTHONPATH=src python3 -m unittest tests.test_cli -v`
+- `PYTHONPATH=src python -m unittest tests.test_cli -v`
