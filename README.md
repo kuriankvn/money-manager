@@ -54,3 +54,12 @@
 
 ## prompt to use .codebase preferences
 `Always read and follow the .codebase file preferences before generating any code`
+
+## run cliapp
+- `pip install -e .` and `money-manager`
+- `PYTHONPATH=src python3 -m money_manager.cli`
+- `PYTHONPATH=src python3 src/money_manager/cli.py`
+
+## run cliapp testcases
+- `pip install -e ".[dev]"` and `pytest tests/test_cli.py -v`
+- `PYTHONPATH=src python3 -m unittest tests.test_cli -v`
