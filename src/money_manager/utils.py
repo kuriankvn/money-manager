@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from typing import Optional
 from uuid import UUID
@@ -42,7 +43,7 @@ def validate_non_empty(value: str) -> bool:
     return bool(value.strip())
 
 
-def datetime_to_epoch(datetime_str: str) -> float:
+def datetime_to_epoch(datetime_str: str) -> Optional[float]:
     if not datetime_str.strip():
         return time.time()
     
@@ -50,7 +51,8 @@ def datetime_to_epoch(datetime_str: str) -> float:
         datetime: time.struct_time = time.strptime(datetime_str.strip(), '%Y-%m-%d %H:%M')
         return time.mktime(datetime)
     except ValueError:
-        raise ValueError("Invalid date format. Expected: YYYY-MM-DD HH:MM")
+        print("Invalid date format. Expected: YYYY-MM-DD HH:MM")
+        return None
 
 
 def epoch_to_datetime(epoch: float) -> str:

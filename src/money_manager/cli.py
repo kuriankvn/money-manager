@@ -1,5 +1,5 @@
-from collections.abc import Callable
 import uuid
+from collections.abc import Callable
 from typing import Any, Optional, List
 
 from money_manager.database import init_database
@@ -7,16 +7,14 @@ from money_manager.models import Category, Transaction, TransactionType, User
 from money_manager.repositories import (
     CategoryRepository,
     TransactionRepository,
-    UserRepository,
-)
+    UserRepository,)
 from money_manager.utils import (
     pause,
     print_header,
     validate_non_empty,
     validate_positive_float,
     datetime_to_epoch,
-    epoch_to_datetime,
-)
+    epoch_to_datetime,)
 
 
 class MoneyManagerCLI:
@@ -162,7 +160,6 @@ class MoneyManagerCLI:
         users: List[User] = self._get_users()
         if not users:
             return
-        
         item: Optional[Any] = self._select_item_from_list(items=users, prompt="Select user number")
         if item is None:
             return
@@ -187,7 +184,6 @@ class MoneyManagerCLI:
         users: List[User] = self._get_users()
         if not users:
             return
-        
         item: Optional[Any] = self._select_item_from_list(items=users, prompt="Select user number")
         if item is None:
             return
@@ -267,7 +263,6 @@ class MoneyManagerCLI:
         categories: List[Category] = self._get_categories()
         if not categories:
             return
-        
         item: Optional[Any] = self._select_item_from_list(items=categories, prompt="Select category number")
         if item is None:
             return
@@ -276,10 +271,10 @@ class MoneyManagerCLI:
         updated_name: Optional[str] = self._get_validated_name(prompt=f"Enter updated category name (current: {selected_category.name}): ")
         if not updated_name:
             return
-        category_type: Optional[TransactionType] = self._get_transaction_type()
-        if not category_type:
+        updated_category_type: Optional[TransactionType] = self._get_transaction_type()
+        if not updated_category_type:
             return
-        updated_category: Category = Category(uid=selected_category.uid, name=updated_name, type=category_type)
+        updated_category: Category = Category(uid=selected_category.uid, name=updated_name, type=updated_category_type)
         
         try:
             if self.category_repo.update(category=updated_category):
@@ -295,7 +290,6 @@ class MoneyManagerCLI:
         categories: List[Category] = self._get_categories()
         if not categories:
             return
-        
         item: Optional[Any] = self._select_item_from_list(items=categories, prompt="Select category number")
         if item is None:
             return
@@ -347,14 +341,8 @@ class MoneyManagerCLI:
             return
         selected_user: User = user
         
-        transaction_type: Optional[TransactionType] = self._get_transaction_type()
-        if not transaction_type:
-            return
-        
-        categories: List[Category] = self.category_repo.get_by_type(transaction_type=transaction_type)
+        categories: List[Category] = self._get_categories()
         if not categories:
-            print(f"\n✗ No categories found for {transaction_type.value} type.")
-            pause()
             return
         category: Optional[Any] = self._select_item_from_list(items=categories, prompt="Select category number")
         if category is None:
@@ -370,10 +358,13 @@ class MoneyManagerCLI:
             return
         
         datetime_str: str = input("\nEnter date and time (YYYY-MM-DD HH:MM): ").strip()
-        datetime: float = datetime_to_epoch(datetime_str=datetime_str)
+        transaction_datetime: Optional[float] = datetime_to_epoch(datetime_str=datetime_str)
+        if transaction_datetime is None:
+            pause()
+            return
         
         transaction: Transaction = Transaction(
-            uid=str(uuid.uuid4()), name=name, amount=amount, datetime=datetime, user=selected_user, category=selected_category)
+            uid=str(uuid.uuid4()), name=name, amount=amount, datetime=transaction_datetime, user=selected_user, category=selected_category)
         
         try:
             self.transaction_repo.create(transaction=transaction)
@@ -401,25 +392,14 @@ class MoneyManagerCLI:
     
     def update_transaction(self) -> None:
         print_header(title="Update Transaction")
+
         transactions: List[Transaction] = self._get_transactions()
         if not transactions:
             return
-        
         item: Optional[Any] = self._select_item_from_list(items=transactions, prompt="Select transaction number")
         if item is None:
             return
         selected_transaction: Transaction = item
-        
-        updated_name: Optional[str] = self._get_validated_name(prompt=f"Enter updated name (current: {selected_transaction.name}): ")
-        if not updated_name:
-            return
-        
-        updated_amount: Optional[float] = self._get_validated_amount(prompt=f"Enter updated amount (current: ${selected_transaction.amount:.2f}): ")
-        if updated_amount is None:
-            return
-        
-        updated_datetime_str: str = input(f"Enter updated date and time (YYYY-MM-DD HH:MM) (current: {epoch_to_datetime(epoch=selected_transaction.datetime)}): ").strip()
-        updated_datetime: float = datetime_to_epoch(datetime_str=updated_datetime_str)
         
         users: List[User] = self._get_users()
         if not users:
@@ -429,19 +409,27 @@ class MoneyManagerCLI:
             return
         updated_user: User = user
         
-        transaction_type: Optional[TransactionType] = self._get_transaction_type()
-        if not transaction_type:
-            return
-        
-        categories: List[Category] = self.category_repo.get_by_type(transaction_type=transaction_type)
+        categories: List[Category] = self._get_categories()
         if not categories:
-            print(f"\n✗ No categories found for {transaction_type.value} type.")
-            pause()
             return
         category: Optional[Any] = self._select_item_from_list(items=categories, prompt="Select category number")
         if category is None:
             return
         updated_category: Category = category
+
+        updated_name: Optional[str] = self._get_validated_name(prompt=f"Enter updated transaction name (current: {selected_transaction.name}): ")
+        if not updated_name:
+            return
+        
+        updated_amount: Optional[float] = self._get_validated_amount(prompt=f"Enter updated transaction amount (current: ${selected_transaction.amount:.2f}): ")
+        if updated_amount is None:
+            return
+        
+        updated_datetime_str: str = input(f"\nEnter updated date and time (YYYY-MM-DD HH:MM) (current: {epoch_to_datetime(epoch=selected_transaction.datetime)}): ").strip()
+        updated_datetime: Optional[float] = datetime_to_epoch(datetime_str=updated_datetime_str)
+        if updated_datetime is None:
+            pause()
+            return
         
         updated_transaction: Transaction = Transaction(
             uid=selected_transaction.uid, name=updated_name, amount=updated_amount, datetime=updated_datetime, user=updated_user, category=updated_category)
@@ -460,7 +448,6 @@ class MoneyManagerCLI:
         transactions: List[Transaction] = self._get_transactions()
         if not transactions:
             return
-        
         item: Optional[Any] = self._select_item_from_list(items=transactions, prompt="Select transaction number")
         if item is None:
             return
