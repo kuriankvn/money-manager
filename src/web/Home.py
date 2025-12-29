@@ -7,6 +7,7 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
     
 st.title("💰 Money Manager Dashboard")
 
@@ -66,7 +67,6 @@ Select a page from the sidebar to get started! 👈
 
 ---
 
-*Made with Bob*
 """)
 
 # Sidebar information
