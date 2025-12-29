@@ -61,15 +61,18 @@ with tab1:
     df = load_categories()
     
     if not df.empty:
+        # Hide UUID column, show only names
+        display_columns = ["uid", "name", "user_name"]
+        display_df = df[display_columns] if all(col in df.columns for col in display_columns) else df
+        
         st.dataframe(
-            df,
-            use_container_width=True,
+            display_df,
+            width='stretch',
             hide_index=True,
             column_config={
                 "uid": st.column_config.TextColumn("UID", width="small"),
                 "name": st.column_config.TextColumn("Name", width="medium"),
-                "user_uid": st.column_config.TextColumn("User UID", width="small"),
-                "user_name": st.column_config.TextColumn("User Name", width="medium"),
+                "user_name": st.column_config.TextColumn("User", width="medium"),
             }
         )
         st.info(f"Total categories: {len(df)}")
@@ -91,7 +94,7 @@ with tab2:
             user_options = {f"{user[0]} ({user[1]})": user[1] for user in users}
             selected_user = st.selectbox("User *", options=list(user_options.keys()))
             
-            submitted = st.form_submit_button("➕ Create Category", type="primary", use_container_width=True)
+            submitted = st.form_submit_button("➕ Create Category", type="primary", width='stretch')
             
             if submitted:
                 if not name or not name.strip():
@@ -124,7 +127,7 @@ with tab3:
             user_options = {f"{user[0]} ({user[1]})": user[1] for user in users}
             selected_user = st.selectbox("User *", options=list(user_options.keys()))
             
-            submitted = st.form_submit_button("✏️ Update Category", type="secondary", use_container_width=True)
+            submitted = st.form_submit_button("✏️ Update Category", type="secondary", width='stretch')
             
             if submitted:
                 if not uid or not uid.strip():
@@ -153,7 +156,7 @@ with tab4:
         
         confirm = st.checkbox("I understand this action cannot be undone")
         
-        submitted = st.form_submit_button("🗑️ Delete Category", type="primary", use_container_width=True)
+        submitted = st.form_submit_button("🗑️ Delete Category", type="primary", width='stretch')
         
         if submitted:
             if not uid or not uid.strip():
@@ -173,8 +176,5 @@ with tab4:
 with st.sidebar:
     st.markdown("### 💡 Tips")
     st.markdown("""
-    - Categories help organize transactions
-    - Each category belongs to a user
-    - Copy UID from the table for update/delete
-    - All fields marked with * are required
+    - TODO
     """)

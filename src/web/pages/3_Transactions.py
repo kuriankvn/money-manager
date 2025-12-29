@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import sys
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, time
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -28,10 +28,10 @@ def load_transactions():
     success, data = api_client.get_transactions()
     if success and data:
         df = pd.DataFrame(data)
-        # Convert timestamp to readable format
+        # Convert timestamp to date only format
         if 'datetime' in df.columns:
             df['datetime'] = df['datetime'].apply(
-                lambda x: datetime.fromtimestamp(x).strftime('%Y-%m-%d %H:%M:%S')
+                lambda x: datetime.fromtimestamp(x).strftime('%Y-%m-%d')
             )
         st.session_state.transactions_data = df
         return df
@@ -90,23 +90,27 @@ with tab1:
         # Color code by type
         def highlight_type(row):
             if row['type'] == 'income':
-                return ['background-color: #d4edda'] * len(row)
+                return ['background-color: #90EE90; color: #000000'] * len(row)
             elif row['type'] == 'expense':
-                return ['background-color: #f8d7da'] * len(row)
+                return ['background-color: #FF6B6B; color: #000000'] * len(row)
             return [''] * len(row)
         
+        # Hide UUID columns, show only names
+        display_columns = ["uid", "name", "amount", "datetime", "type", "user_name", "category_name"]
+        display_df = df[display_columns] if all(col in df.columns for col in display_columns) else df
+        
         st.dataframe(
-            df.style.apply(highlight_type, axis=1),
-            use_container_width=True,
+            display_df.style.apply(highlight_type, axis=1),
+            width='stretch',
             hide_index=True,
             column_config={
                 "uid": st.column_config.TextColumn("UID", width="small"),
                 "name": st.column_config.TextColumn("Name", width="medium"),
-                "amount": st.column_config.NumberColumn("Amount", format="$%.2f"),
-                "datetime": st.column_config.TextColumn("Date/Time", width="medium"),
+                "amount": st.column_config.NumberColumn("Amount", format="₹%.2f"),
+                "datetime": st.column_config.TextColumn("Date", width="medium"),
                 "type": st.column_config.TextColumn("Type", width="small"),
-                "user_name": st.column_config.TextColumn("User", width="small"),
-                "category_name": st.column_config.TextColumn("Category", width="small"),
+                "user_name": st.column_config.TextColumn("User", width="medium"),
+                "category_name": st.column_config.TextColumn("Category", width="medium"),
             }
         )
         
@@ -116,10 +120,10 @@ with tab1:
             st.metric("Total Transactions", len(df))
         with col2:
             income = df[df['type'] == 'income']['amount'].sum() if 'income' in df['type'].values else 0
-            st.metric("Total Income", f"${income:.2f}")
+            st.metric("Total Income", f"₹{income:.2f}")
         with col3:
             expense = df[df['type'] == 'expense']['amount'].sum() if 'expense' in df['type'].values else 0
-            st.metric("Total Expenses", f"${expense:.2f}")
+            st.metric("Total Expenses", f"₹{expense:.2f}")
     else:
         st.info("No transactions found. Create your first transaction!")
 
@@ -139,6 +143,7 @@ with tab2:
             name = st.text_input("Transaction Name *", placeholder="Enter transaction name")
             amount = st.number_input("Amount *", min_value=0.01, value=0.01, step=0.01, format="%.2f")
             transaction_type = st.radio("Type *", options=["income", "expense"], horizontal=True)
+            transaction_date = st.date_input("Transaction Date *", value=datetime.now())
             
             user_options = {f"{user[0]} ({user[1]})": user[1] for user in users}
             selected_user = st.selectbox("User *", options=list(user_options.keys()))
@@ -146,7 +151,7 @@ with tab2:
             category_options = {f"{cat[0]} ({cat[1]})": cat[1] for cat in categories}
             selected_category = st.selectbox("Category *", options=list(category_options.keys()))
             
-            submitted = st.form_submit_button("➕ Create Transaction", type="primary", use_container_width=True)
+            submitted = st.form_submit_button("➕ Create Transaction", type="primary", width='stretch')
             
             if submitted:
                 if not name or not name.strip():
@@ -160,7 +165,7 @@ with tab2:
                 else:
                     user_uid = user_options[selected_user]
                     category_uid = category_options[selected_category]
-                    timestamp = datetime.now().timestamp()
+                    timestamp = datetime.combine(transaction_date, time(0, 0, 1)).timestamp()
                     
                     success, data = api_client.create_transaction(
                         name.strip(), amount, timestamp, transaction_type, user_uid, category_uid
@@ -189,6 +194,7 @@ with tab3:
             name = st.text_input("New Name *", placeholder="Enter new name")
             amount = st.number_input("Amount *", min_value=0.01, value=0.01, step=0.01, format="%.2f")
             transaction_type = st.radio("Type *", options=["income", "expense"], horizontal=True)
+            transaction_date = st.date_input("Transaction Date *", value=datetime.now())
             
             user_options = {f"{user[0]} ({user[1]})": user[1] for user in users}
             selected_user = st.selectbox("User *", options=list(user_options.keys()))
@@ -196,7 +202,7 @@ with tab3:
             category_options = {f"{cat[0]} ({cat[1]})": cat[1] for cat in categories}
             selected_category = st.selectbox("Category *", options=list(category_options.keys()))
             
-            submitted = st.form_submit_button("✏️ Update Transaction", type="secondary", use_container_width=True)
+            submitted = st.form_submit_button("✏️ Update Transaction", type="secondary", width='stretch')
             
             if submitted:
                 if not uid or not uid.strip():
@@ -212,7 +218,7 @@ with tab3:
                 else:
                     user_uid = user_options[selected_user]
                     category_uid = category_options[selected_category]
-                    timestamp = datetime.now().timestamp()
+                    timestamp = datetime.combine(transaction_date, time(0, 0, 1)).timestamp()
                     
                     success, data = api_client.update_transaction(
                         uid.strip(), name.strip(), amount, timestamp, transaction_type, user_uid, category_uid
@@ -232,7 +238,7 @@ with tab4:
         
         confirm = st.checkbox("I understand this action cannot be undone")
         
-        submitted = st.form_submit_button("🗑️ Delete Transaction", type="primary", use_container_width=True)
+        submitted = st.form_submit_button("🗑️ Delete Transaction", type="primary", width='stretch')
         
         if submitted:
             if not uid or not uid.strip():
@@ -252,9 +258,5 @@ with tab4:
 with st.sidebar:
     st.markdown("### 💡 Tips")
     st.markdown("""
-    - 🟢 Income transactions are highlighted in green
-    - 🔴 Expense transactions are highlighted in red
-    - Timestamps are automatically set to current time
-    - Copy UID from the table for update/delete
-    - All fields marked with * are required
+    - TODO
     """)

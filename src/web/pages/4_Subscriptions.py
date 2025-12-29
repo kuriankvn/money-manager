@@ -83,22 +83,26 @@ with tab1:
         # Color code by active status
         def highlight_active(row):
             if row['active']:
-                return ['background-color: #d4edda'] * len(row)
+                return ['background-color: #90EE90; color: #000000'] * len(row)
             else:
-                return ['background-color: #f8d7da'] * len(row)
+                return ['background-color: #FF6B6B; color: #000000'] * len(row)
+        
+        # Hide UUID columns, show only names
+        display_columns = ["uid", "name", "amount", "interval", "multiplier", "user_name", "category_name", "active"]
+        display_df = df[display_columns] if all(col in df.columns for col in display_columns) else df
         
         st.dataframe(
-            df.style.apply(highlight_active, axis=1),
-            use_container_width=True,
+            display_df.style.apply(highlight_active, axis=1),
+            width='stretch',
             hide_index=True,
             column_config={
                 "uid": st.column_config.TextColumn("UID", width="small"),
                 "name": st.column_config.TextColumn("Name", width="medium"),
-                "amount": st.column_config.NumberColumn("Amount", format="$%.2f"),
+                "amount": st.column_config.NumberColumn("Amount", format="₹%.2f"),
                 "interval": st.column_config.TextColumn("Interval", width="small"),
                 "multiplier": st.column_config.NumberColumn("Multiplier", width="small"),
-                "user_name": st.column_config.TextColumn("User", width="small"),
-                "category_name": st.column_config.TextColumn("Category", width="small"),
+                "user_name": st.column_config.TextColumn("User", width="medium"),
+                "category_name": st.column_config.TextColumn("Category", width="medium"),
                 "active": st.column_config.CheckboxColumn("Active", width="small"),
             }
         )
@@ -112,7 +116,7 @@ with tab1:
             st.metric("Active", active_count)
         with col3:
             total_amount = df[df['active']]['amount'].sum() if 'active' in df.columns else 0
-            st.metric("Total Active Amount", f"${total_amount:.2f}")
+            st.metric("Total Active Amount", f"₹{total_amount:.2f}")
     else:
         st.info("No subscriptions found. Create your first subscription!")
 
@@ -146,7 +150,7 @@ with tab2:
             
             active = st.checkbox("Active", value=True)
             
-            submitted = st.form_submit_button("➕ Create Subscription", type="primary", use_container_width=True)
+            submitted = st.form_submit_button("➕ Create Subscription", type="primary", width='stretch')
             
             if submitted:
                 if not name or not name.strip():
@@ -204,7 +208,7 @@ with tab3:
             
             active = st.checkbox("Active", value=True)
             
-            submitted = st.form_submit_button("✏️ Update Subscription", type="secondary", use_container_width=True)
+            submitted = st.form_submit_button("✏️ Update Subscription", type="secondary", width='stretch')
             
             if submitted:
                 if not uid or not uid.strip():
@@ -241,7 +245,7 @@ with tab4:
         
         confirm = st.checkbox("I understand this action cannot be undone")
         
-        submitted = st.form_submit_button("🗑️ Delete Subscription", type="primary", use_container_width=True)
+        submitted = st.form_submit_button("🗑️ Delete Subscription", type="primary", width='stretch')
         
         if submitted:
             if not uid or not uid.strip():
@@ -261,10 +265,5 @@ with tab4:
 with st.sidebar:
     st.markdown("### 💡 Tips")
     st.markdown("""
-    - 🟢 Active subscriptions are highlighted in green
-    - 🔴 Inactive subscriptions are highlighted in red
-    - Interval options: daily, weekly, monthly, yearly
-    - Multiplier: how many intervals (e.g., 2 months)
-    - Copy UID from the table for update/delete
-    - All fields marked with * are required
+    - TODO
     """)

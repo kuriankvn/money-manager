@@ -50,7 +50,7 @@ with tab1:
     if not df.empty:
         st.dataframe(
             df,
-            use_container_width=True,
+            width='stretch',
             hide_index=True,
             column_config={
                 "uid": st.column_config.TextColumn("UID", width="medium"),
@@ -67,7 +67,7 @@ with tab2:
     with st.form("create_user_form", clear_on_submit=True):
         name = st.text_input("Name *", placeholder="Enter user name")
         
-        submitted = st.form_submit_button("➕ Create User", type="primary", use_container_width=True)
+        submitted = st.form_submit_button("➕ Create User", type="primary", width='stretch')
         
         if submitted:
             if not name or not name.strip():
@@ -88,7 +88,7 @@ with tab3:
         uid = st.text_input("User UID *", placeholder="Enter UID to update")
         name = st.text_input("New Name *", placeholder="Enter new name")
         
-        submitted = st.form_submit_button("✏️ Update User", type="secondary", use_container_width=True)
+        submitted = st.form_submit_button("✏️ Update User", type="secondary", width='stretch')
         
         if submitted:
             if not uid or not uid.strip():
@@ -114,7 +114,7 @@ with tab4:
         
         confirm = st.checkbox("I understand this action cannot be undone")
         
-        submitted = st.form_submit_button("🗑️ Delete User", type="primary", use_container_width=True)
+        submitted = st.form_submit_button("🗑️ Delete User", type="primary", width='stretch')
         
         if submitted:
             if not uid or not uid.strip():
@@ -134,7 +134,5 @@ with tab4:
 with st.sidebar:
     st.markdown("### 💡 Tips")
     st.markdown("""
-    - Copy UID from the table for update/delete
-    - All fields marked with * are required
-    - Names should be unique and descriptive
+    - TODO
     """)
