@@ -18,6 +18,3 @@ class CategoryResponse(BaseModel):
     name: str
     user_uid: str
     user_name: str
-
-
-# Made with Bob

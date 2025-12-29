@@ -32,6 +32,3 @@ class TransactionResponse(BaseModel):
     user_name: str
     category_uid: str
     category_name: str
-
-
-# Made with Bob

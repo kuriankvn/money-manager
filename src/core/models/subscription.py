@@ -25,5 +25,3 @@ class Subscription:
     def __str__(self) -> str:
         return f"{self.name} - {self.amount} - {self.interval} - {self.multiplier} - {self.user} - {self.category} - {self.active}"
 
-# Made with Bob
-

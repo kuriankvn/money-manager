@@ -88,6 +88,3 @@ def delete_category(uid: str) -> None:
     success: bool = category_repo.delete(uid=uid)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
-
-
-# Made with Bob

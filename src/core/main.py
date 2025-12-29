@@ -14,7 +14,6 @@ app: FastAPI = FastAPI(
     version="0.1.0"
 )
 
-# Include routers
 app.include_router(router=users_router)
 app.include_router(router=categories_router)
 app.include_router(router=transactions_router)
@@ -60,6 +59,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-# Made with Bob

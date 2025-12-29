@@ -11,5 +11,3 @@ __all__ = [
     'TransactionRepository',
     'SubscriptionRepository',
 ]
-
-# Made with Bob

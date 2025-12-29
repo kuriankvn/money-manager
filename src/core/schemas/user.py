@@ -14,6 +14,3 @@ class UserResponse(BaseModel):
     
     uid: str
     name: str
-
-
-# Made with Bob

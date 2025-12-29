@@ -246,6 +246,3 @@ def delete_subscription(uid: str) -> tuple[bool, Any]:
         return handle_response(response)
     except Exception as e:
         return False, f"Connection error: {str(e)}"
-
-
-# Made with Bob

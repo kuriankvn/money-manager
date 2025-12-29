@@ -1,7 +1,7 @@
 import unittest
 import os
 import tempfile
-from core.database import init_user_tables, get_connection
+from core.database import init_user_tables
 from core.models import User
 from core.repositories import UserRepository
 from fastapi.testclient import TestClient
@@ -103,5 +103,3 @@ class TestUser(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-# Made with Bob

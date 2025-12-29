@@ -135,6 +135,3 @@ def delete_transaction(uid: str) -> None:
     success: bool = transaction_repo.delete(uid=uid)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
-
-
-# Made with Bob

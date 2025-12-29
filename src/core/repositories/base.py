@@ -31,5 +31,3 @@ class IRepository(ABC, Generic[T]):
     def delete(self, uid: str) -> bool:
         """Delete entity by ID and return success status"""
         pass
-
-# Made with Bob

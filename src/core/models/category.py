@@ -10,5 +10,3 @@ class Category:
     
     def __str__(self) -> str:
         return f"{self.name} - {self.user}"
-
-# Made with Bob

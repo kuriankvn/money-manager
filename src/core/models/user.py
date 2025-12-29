@@ -8,5 +8,3 @@ class User:
     
     def __str__(self) -> str:
         return self.name
-
-# Made with Bob

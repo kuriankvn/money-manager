@@ -92,5 +92,3 @@ class TransactionRepository(IRepository[Transaction]):
         connection.commit()
         connection.close()
         return affected > 0
-
-# Made with Bob

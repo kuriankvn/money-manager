@@ -54,6 +54,3 @@ def delete_user(uid: str) -> None:
     success: bool = user_repo.delete(uid=uid)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-
-
-# Made with Bob

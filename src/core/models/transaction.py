@@ -22,5 +22,3 @@ class Transaction:
     
     def __str__(self) -> str:
         return f"{self.name} - {self.amount} - {epoch_to_datetime(epoch=self.datetime)} - {self.type} - {self.user} - {self.category}"
-
-# Made with Bob

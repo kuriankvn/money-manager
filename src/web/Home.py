@@ -80,6 +80,3 @@ with st.sidebar:
     st.markdown("### ℹ️ System Info")
     st.info("Backend: http://localhost:8000")
     st.info("Streamlit UI: http://localhost:8501")
-
-
-# Made with Bob

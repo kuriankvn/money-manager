@@ -35,6 +35,3 @@ class SubscriptionResponse(BaseModel):
     category_uid: str
     category_name: str
     active: bool
-
-
-# Made with Bob

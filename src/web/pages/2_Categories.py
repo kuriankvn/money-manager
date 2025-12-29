@@ -178,6 +178,3 @@ with st.sidebar:
     - Copy UID from the table for update/delete
     - All fields marked with * are required
     """)
-
-
-# Made with Bob

@@ -138,6 +138,3 @@ with st.sidebar:
     - All fields marked with * are required
     - Names should be unique and descriptive
     """)
-
-
-# Made with Bob

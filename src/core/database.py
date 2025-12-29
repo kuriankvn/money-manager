@@ -20,10 +20,14 @@ def get_db_path() -> Path:
     return db_path
 
 
+def get_connection() -> sqlite3.Connection:
+    db_path: Path = get_db_path()
+    return sqlite3.connect(database=db_path)
+
+
 def init_user_tables() -> None:
     """Initialize user tables only"""
-    db_path: Path = get_db_path()
-    conn: sqlite3.Connection = sqlite3.connect(database=db_path)
+    conn: sqlite3.Connection = get_connection()
     cursor: sqlite3.Cursor = conn.cursor()
     
     cursor.execute("""
@@ -38,8 +42,7 @@ def init_user_tables() -> None:
 
 def init_category_tables() -> None:
     """Initialize category tables only"""
-    db_path: Path = get_db_path()
-    conn: sqlite3.Connection = sqlite3.connect(database=db_path)
+    conn: sqlite3.Connection = get_connection()
     cursor: sqlite3.Cursor = conn.cursor()
     
     cursor.execute("""
@@ -56,8 +59,7 @@ def init_category_tables() -> None:
 
 def init_transaction_tables() -> None:
     """Initialize transaction tables (requires user and category tables)"""
-    db_path: Path = get_db_path()
-    conn: sqlite3.Connection = sqlite3.connect(database=db_path)
+    conn: sqlite3.Connection = get_connection()
     cursor: sqlite3.Cursor = conn.cursor()
     
     cursor.execute("""
@@ -79,8 +81,7 @@ def init_transaction_tables() -> None:
 
 def init_subscription_tables() -> None:
     """Initialize subscription tables (requires user and category tables)"""
-    db_path: Path = get_db_path()
-    conn: sqlite3.Connection = sqlite3.connect(database=db_path)
+    conn: sqlite3.Connection = get_connection()
     cursor: sqlite3.Cursor = conn.cursor()
     
     cursor.execute("""
@@ -107,8 +108,3 @@ def init_database() -> None:
     init_category_tables()
     init_transaction_tables()
     init_subscription_tables()
-
-
-def get_connection() -> sqlite3.Connection:
-    db_path: Path = get_db_path()
-    return sqlite3.connect(database=db_path)

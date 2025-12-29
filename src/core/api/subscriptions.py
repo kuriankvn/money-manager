@@ -141,6 +141,3 @@ def delete_subscription(uid: str) -> None:
     success: bool = subscription_repo.delete(uid=uid)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subscription not found")
-
-
-# Made with Bob

@@ -31,5 +31,3 @@ __all__ = [
     "Interval",
     "SubscriptionRepository",
 ]
-
-# Made with Bob

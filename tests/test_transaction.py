@@ -23,7 +23,6 @@ class TestTransaction(unittest.TestCase):
         self.repo = TransactionRepository()
         self.client = TestClient(app)
         
-        # Create test user and category
         self.user = User(uid='user-1', name='Test User')
         self.category = Category(uid='cat-1', name='Groceries', user=self.user)
         self.user_repo.create(self.user)
@@ -180,5 +179,3 @@ class TestTransaction(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-# Made with Bob

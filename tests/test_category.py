@@ -21,7 +21,6 @@ class TestCategory(unittest.TestCase):
         self.repo = CategoryRepository()
         self.client = TestClient(app)
         
-        # Create test user
         self.user = User(uid='user-1', name='Test User')
         self.user_repo.create(self.user)
     
@@ -125,5 +124,3 @@ class TestCategory(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-# Made with Bob

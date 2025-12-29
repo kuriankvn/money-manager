@@ -101,5 +101,3 @@ class SubscriptionRepository(IRepository[Subscription]):
         connection.commit()
         connection.close()
         return affected > 0
-
-# Made with Bob
