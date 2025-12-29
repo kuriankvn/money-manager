@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools~=80.0.0", "wheel~=0.45.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "money-manager-gradio-ui"
+version = "0.1.0"
+description = "Gradio UI for Money Manager API"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "gradio~=5.0.0",
+    "requests~=2.32.0",
+    "pandas~=2.2.0",
+]
+
+[project.scripts]
+money-manager-ui = "app:main"
+
+
+# Made with Bob

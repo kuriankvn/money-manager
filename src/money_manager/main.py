@@ -1,34 +1,28 @@
+from turtle import st
+from typing import Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from money_manager.api.users import router as users_router
 from money_manager.api.categories import router as categories_router
 from money_manager.api.transactions import router as transactions_router
 from money_manager.api.subscriptions import router as subscriptions_router
+from money_manager.database import init_database
 
-app = FastAPI(
+app: FastAPI = FastAPI(
     title="Money Manager API",
     description="REST API for managing personal finances",
     version="0.1.0"
 )
 
-# CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Include routers
-app.include_router(users_router)
-app.include_router(categories_router)
-app.include_router(transactions_router)
-app.include_router(subscriptions_router)
+app.include_router(router=users_router)
+app.include_router(router=categories_router)
+app.include_router(router=transactions_router)
+app.include_router(router=subscriptions_router)
 
 
-@app.get("/")
-def root():
+@app.get(path="/")
+def root() -> dict[str, Any]:
     """Root endpoint"""
     return {
         "message": "Money Manager API",
@@ -43,10 +37,29 @@ def root():
     }
 
 
-@app.get("/health")
-def health_check():
+@app.get(path="/health")
+def health_check() -> dict[str, str]:
     """Health check endpoint"""
     return {"status": "healthy"}
+
+
+
+def main() -> None:
+    """Entry point for money-manager command"""
+    print("Initializing database...")
+    try:
+        init_database()
+        print("Database initialized successfully!")
+    except Exception as e:
+        print(f"Database initialization failed: {e}")
+        return
+    
+    import uvicorn
+    uvicorn.run(app="money_manager.main:app", host="0.0.0.0", port=8000, reload=True)
+
+
+if __name__ == "__main__":
+    main()
 
 
 # Made with Bob
