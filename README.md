@@ -23,7 +23,7 @@
 - source .venv/bin/activate
 - pip uninstall -y setuptools wheel
 - pip list --outdated --format=json | jq -r '.[].name' | xargs -n1 pip install -U
-- pip install -r requirements.txt
+- pip install -e ".[dev]"
 
 ## run in dev edit mode
 - install dev dependencies: `pip install -e ".[dev]"`
