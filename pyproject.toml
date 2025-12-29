@@ -21,10 +21,15 @@ classifiers = [
 ]
 dependencies = [
     "python-dotenv==1.2.1",
+    "fastapi==0.128.0",
+    "uvicorn[standard]==0.40.0",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest~=9.0.0"]
+dev = [
+    "pytest~=9.0.0",
+    "httpx~=0.28.1"
+]
 
 [project.scripts]
 money-manager = "money_manager.cli:main"
