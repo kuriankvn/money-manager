@@ -7,6 +7,7 @@ from core.models.user import User
 from core.models.category import Category
 from core.schemas.subscription import SubscriptionCreate, SubscriptionUpdate, SubscriptionResponse
 from core.utils import generate_uid
+from core.exceptions import DuplicateEntityError
 
 router: APIRouter = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
 subscription_repo: SubscriptionRepository = SubscriptionRepository()
@@ -36,7 +37,11 @@ def create_subscription(subscription_data: SubscriptionCreate) -> SubscriptionRe
         category=category,
         active=subscription_data.active
     )
-    subscription_repo.create(entity=subscription)
+    try:
+        subscription_repo.create(entity=subscription)
+    except DuplicateEntityError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    
     return SubscriptionResponse(
         uid=subscription.uid,
         name=subscription.name,
@@ -117,9 +122,12 @@ def update_subscription(uid: str, subscription_data: SubscriptionUpdate) -> Subs
         category=category,
         active=subscription_data.active
     )
-    success: bool = subscription_repo.update(entity=subscription)
-    if not success:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Update failed")
+    try:
+        success: bool = subscription_repo.update(entity=subscription)
+        if not success:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Update failed")
+    except DuplicateEntityError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     
     return SubscriptionResponse(
         uid=subscription.uid,

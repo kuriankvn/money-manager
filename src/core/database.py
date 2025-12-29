@@ -33,7 +33,7 @@ def init_user_tables() -> None:
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             uid TEXT PRIMARY KEY,
-            name TEXT NOT NULL)
+            name TEXT NOT NULL UNIQUE)
     """)
     
     conn.commit()
@@ -50,7 +50,8 @@ def init_category_tables() -> None:
             uid TEXT PRIMARY KEY,
             name TEXT NOT NULL,
             user_uid TEXT NOT NULL,
-            FOREIGN KEY (user_uid) REFERENCES users(uid))
+            FOREIGN KEY (user_uid) REFERENCES users(uid),
+            UNIQUE(name, user_uid))
     """)
     
     conn.commit()
@@ -95,7 +96,8 @@ def init_subscription_tables() -> None:
             category_uid TEXT NOT NULL,
             active INTEGER NOT NULL DEFAULT 1,
             FOREIGN KEY (user_uid) REFERENCES users(uid),
-            FOREIGN KEY (category_uid) REFERENCES categories(uid))
+            FOREIGN KEY (category_uid) REFERENCES categories(uid),
+            UNIQUE(name, user_uid))
     """)
     
     conn.commit()

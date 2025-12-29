@@ -3,16 +3,21 @@ from typing import Any, Optional
 from core.database import get_connection
 from core.repositories.base import IRepository
 from core.models.user import User
+from core.exceptions import DuplicateEntityError
 
 
 class UserRepository(IRepository[User]):
     def create(self, entity: User) -> str:
         connection: sqlite3.Connection = get_connection()
         cursor: sqlite3.Cursor = connection.cursor()
-        cursor.execute("INSERT INTO users (uid, name) VALUES (?, ?)", (entity.uid, entity.name))
-        connection.commit()
-        connection.close()
-        return entity.uid
+        try:
+            cursor.execute("INSERT INTO users (uid, name) VALUES (?, ?)", (entity.uid, entity.name))
+            connection.commit()
+            return entity.uid
+        except sqlite3.IntegrityError as e:
+            raise DuplicateEntityError(f"User '{entity.name}' already exists") from e
+        finally:
+            connection.close()
     
     def get_by_id(self, uid: str) -> Optional[User]:
         connection: sqlite3.Connection = get_connection()
@@ -37,11 +42,15 @@ class UserRepository(IRepository[User]):
     def update(self, entity: User) -> bool:
         connection: sqlite3.Connection = get_connection()
         cursor: sqlite3.Cursor = connection.cursor()
-        cursor.execute("UPDATE users SET name = ? WHERE uid = ?", (entity.name, entity.uid))
-        affected: int = cursor.rowcount
-        connection.commit()
-        connection.close()
-        return affected > 0
+        try:
+            cursor.execute("UPDATE users SET name = ? WHERE uid = ?", (entity.name, entity.uid))
+            affected: int = cursor.rowcount
+            connection.commit()
+            return affected > 0
+        except sqlite3.IntegrityError as e:
+            raise DuplicateEntityError(f"User '{entity.name}' already exists") from e
+        finally:
+            connection.close()
     
     def delete(self, uid: str) -> bool:
         connection: sqlite3.Connection = get_connection()

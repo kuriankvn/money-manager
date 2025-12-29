@@ -5,6 +5,7 @@ from core.models.category import Category
 from core.models.user import User
 from core.schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse
 from core.utils import generate_uid
+from core.exceptions import DuplicateEntityError
 
 router: APIRouter = APIRouter(prefix="/categories", tags=["categories"])
 category_repo: CategoryRepository = CategoryRepository()
@@ -20,7 +21,11 @@ def create_category(category_data: CategoryCreate) -> CategoryResponse:
     
     uid: str = generate_uid()
     category: Category = Category(uid=uid, name=category_data.name, user=user)
-    category_repo.create(entity=category)
+    try:
+        category_repo.create(entity=category)
+    except DuplicateEntityError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    
     return CategoryResponse(
         uid=category.uid,
         name=category.name,
@@ -70,9 +75,12 @@ def update_category(uid: str, category_data: CategoryUpdate) -> CategoryResponse
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
     category: Category = Category(uid=uid, name=category_data.name, user=user)
-    success: bool = category_repo.update(entity=category)
-    if not success:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Update failed")
+    try:
+        success: bool = category_repo.update(entity=category)
+        if not success:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Update failed")
+    except DuplicateEntityError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     
     return CategoryResponse(
         uid=category.uid,

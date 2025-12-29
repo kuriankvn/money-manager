@@ -7,6 +7,7 @@ from core.repositories.category import CategoryRepository
 from core.models.user import User
 from core.models.category import Category
 from core.models.subscription import Subscription, Interval
+from core.exceptions import DuplicateEntityError
 
 
 class SubscriptionRepository(IRepository[Subscription]):
@@ -17,14 +18,18 @@ class SubscriptionRepository(IRepository[Subscription]):
     def create(self, entity: Subscription) -> str:
         connection: sqlite3.Connection = get_connection()
         cursor: sqlite3.Cursor = connection.cursor()
-        cursor.execute(
-            """INSERT INTO subscriptions (uid, name, amount, interval, multiplier, user_uid, category_uid, active)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
-            (entity.uid, entity.name, entity.amount, entity.interval.value,
-             entity.multiplier, entity.user.uid, entity.category.uid, 1 if entity.active else 0))
-        connection.commit()
-        connection.close()
-        return entity.uid
+        try:
+            cursor.execute(
+                """INSERT INTO subscriptions (uid, name, amount, interval, multiplier, user_uid, category_uid, active)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (entity.uid, entity.name, entity.amount, entity.interval.value,
+                 entity.multiplier, entity.user.uid, entity.category.uid, 1 if entity.active else 0))
+            connection.commit()
+            return entity.uid
+        except sqlite3.IntegrityError as e:
+            raise DuplicateEntityError(f"Subscription '{entity.name}' already exists for this user") from e
+        finally:
+            connection.close()
     
     def get_by_id(self, uid: str) -> Optional[Subscription]:
         connection: sqlite3.Connection = get_connection()
@@ -82,16 +87,19 @@ class SubscriptionRepository(IRepository[Subscription]):
     def update(self, entity: Subscription) -> bool:
         connection: sqlite3.Connection = get_connection()
         cursor: sqlite3.Cursor = connection.cursor()
-        
-        cursor.execute(
-            """UPDATE subscriptions SET name = ?, amount = ?, interval = ?, multiplier = ?,
-            user_uid = ?, category_uid = ?, active = ? WHERE uid = ?""",
-            (entity.name, entity.amount, entity.interval.value, entity.multiplier,
-             entity.user.uid, entity.category.uid, 1 if entity.active else 0, entity.uid))
-        affected: int = cursor.rowcount
-        connection.commit()
-        connection.close()
-        return affected > 0
+        try:
+            cursor.execute(
+                """UPDATE subscriptions SET name = ?, amount = ?, interval = ?, multiplier = ?,
+                user_uid = ?, category_uid = ?, active = ? WHERE uid = ?""",
+                (entity.name, entity.amount, entity.interval.value, entity.multiplier,
+                 entity.user.uid, entity.category.uid, 1 if entity.active else 0, entity.uid))
+            affected: int = cursor.rowcount
+            connection.commit()
+            return affected > 0
+        except sqlite3.IntegrityError as e:
+            raise DuplicateEntityError(f"Subscription '{entity.name}' already exists for this user") from e
+        finally:
+            connection.close()
     
     def delete(self, uid: str) -> bool:
         connection: sqlite3.Connection = get_connection()

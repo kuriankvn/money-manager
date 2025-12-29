@@ -3,6 +3,7 @@ from core.repositories.user import UserRepository
 from core.models.user import User
 from core.schemas.user import UserCreate, UserUpdate, UserResponse
 from core.utils import generate_uid
+from core.exceptions import DuplicateEntityError
 
 router: APIRouter = APIRouter(prefix="/users", tags=["users"])
 user_repo: UserRepository = UserRepository()
@@ -13,7 +14,11 @@ def create_user(user_data: UserCreate) -> UserResponse:
     """Create a new user"""
     uid: str = generate_uid()
     user: User = User(uid=uid, name=user_data.name)
-    user_repo.create(entity=user)
+    try:
+        user_repo.create(entity=user)
+    except DuplicateEntityError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
+    
     return UserResponse(uid=user.uid, name=user.name)
 
 
@@ -41,9 +46,12 @@ def update_user(uid: str, user_data: UserUpdate) -> UserResponse:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
     user: User = User(uid=uid, name=user_data.name)
-    success: bool = user_repo.update(entity=user)
-    if not success:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Update failed")
+    try:
+        success: bool = user_repo.update(entity=user)
+        if not success:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Update failed")
+    except DuplicateEntityError as e:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
     
     return UserResponse(uid=user.uid, name=user.name)
 

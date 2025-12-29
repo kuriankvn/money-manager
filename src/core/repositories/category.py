@@ -5,6 +5,7 @@ from core.repositories.base import IRepository
 from core.repositories.user import UserRepository
 from core.models.category import Category
 from core.models.user import User
+from core.exceptions import DuplicateEntityError
 
 
 class CategoryRepository(IRepository[Category]):
@@ -14,12 +15,16 @@ class CategoryRepository(IRepository[Category]):
     def create(self, entity: Category) -> str:
         connection: sqlite3.Connection = get_connection()
         cursor: sqlite3.Cursor = connection.cursor()
-        cursor.execute(
-            "INSERT INTO categories (uid, name, user_uid) VALUES (?, ?, ?)",
-            (entity.uid, entity.name, entity.user.uid))
-        connection.commit()
-        connection.close()
-        return entity.uid
+        try:
+            cursor.execute(
+                "INSERT INTO categories (uid, name, user_uid) VALUES (?, ?, ?)",
+                (entity.uid, entity.name, entity.user.uid))
+            connection.commit()
+            return entity.uid
+        except sqlite3.IntegrityError as e:
+            raise DuplicateEntityError(f"Category '{entity.name}' already exists for this user") from e
+        finally:
+            connection.close()
     
     def get_by_id(self, uid: str) -> Optional[Category]:
         connection: sqlite3.Connection = get_connection()
@@ -60,14 +65,17 @@ class CategoryRepository(IRepository[Category]):
     def update(self, entity: Category) -> bool:
         connection: sqlite3.Connection = get_connection()
         cursor: sqlite3.Cursor = connection.cursor()
-        
-        cursor.execute(
-            "UPDATE categories SET name = ?, user_uid = ? WHERE uid = ?",
-            (entity.name, entity.user.uid, entity.uid))
-        affected: int = cursor.rowcount
-        connection.commit()
-        connection.close()
-        return affected > 0
+        try:
+            cursor.execute(
+                "UPDATE categories SET name = ?, user_uid = ? WHERE uid = ?",
+                (entity.name, entity.user.uid, entity.uid))
+            affected: int = cursor.rowcount
+            connection.commit()
+            return affected > 0
+        except sqlite3.IntegrityError as e:
+            raise DuplicateEntityError(f"Category '{entity.name}' already exists for this user") from e
+        finally:
+            connection.close()
     
     def delete(self, uid: str) -> bool:
         connection: sqlite3.Connection = get_connection()
