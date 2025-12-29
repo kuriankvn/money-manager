@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import Any
+from fastapi import APIRouter, HTTPException, status, Body
+from fastapi.responses import Response
 from core.repositories.transaction import TransactionRepository
 from core.repositories.user import UserRepository
 from core.repositories.category import CategoryRepository
@@ -7,11 +9,13 @@ from core.models.user import User
 from core.models.category import Category
 from core.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionResponse
 from core.utils import generate_uid
+from core.services.transaction_service import TransactionService
 
 router: APIRouter = APIRouter(prefix="/transactions", tags=["transactions"])
 transaction_repo: TransactionRepository = TransactionRepository()
 user_repo: UserRepository = UserRepository()
 category_repo: CategoryRepository = CategoryRepository()
+transaction_service: TransactionService = TransactionService()
 
 
 @router.post(path="/", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
@@ -135,3 +139,21 @@ def delete_transaction(uid: str) -> None:
     success: bool = transaction_repo.delete(uid=uid)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
+
+
+
+@router.get(path="/export/csv", response_class=Response)
+def export_transactions_csv() -> Response:
+    """Export all transactions to CSV"""
+    csv_content: str = transaction_service.export_to_csv()
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=transactions.csv"}
+    )
+
+
+@router.post(path="/import/csv", status_code=status.HTTP_201_CREATED)
+def import_transactions_csv(file_content: str = Body(..., embed=True)) -> dict[str, Any]:
+    """Import transactions from CSV content"""
+    return transaction_service.import_from_csv(csv_content=file_content)

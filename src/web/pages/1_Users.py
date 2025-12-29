@@ -134,5 +134,7 @@ with tab4:
 with st.sidebar:
     st.markdown("### 💡 Tips")
     st.markdown("""
-    - TODO
+    - Users are required for creating categories, transactions, and subscriptions
+    - Each user represents a person managing their finances
+    - User names should be unique and descriptive
     """)

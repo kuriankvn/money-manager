@@ -182,5 +182,78 @@ class TestSubscription(unittest.TestCase):
         self.assertEqual(deleted.status_code, 404)
 
 
+    def test_export_subscriptions_csv_api(self) -> None:
+        """Test CSV export with 3 dummy subscriptions"""
+        # Create 3 subscriptions
+        subscriptions_data = [
+            {"name": "Netflix", "amount": 999, "interval": "monthly", "multiplier": 1, "active": True},
+            {"name": "Spotify", "amount": 119, "interval": "monthly", "multiplier": 1, "active": True},
+            {"name": "Amazon Prime", "amount": 1499, "interval": "yearly", "multiplier": 1, "active": True}
+        ]
+        
+        for sub_data in subscriptions_data:
+            sub_data["user_uid"] = self.user.uid
+            sub_data["category_uid"] = self.category.uid
+            self.client.post("/subscriptions/", json=sub_data)
+        
+        # Export CSV
+        response = self.client.get("/subscriptions/export/csv")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["content-type"], "text/csv; charset=utf-8")
+        
+        csv_content = response.text
+        lines = csv_content.strip().split('\n')
+        
+        # Check header
+        self.assertEqual(lines[0], "name,amount,interval,multiplier,user,category,active")
+        
+        # Check we have 3 data rows + 1 header
+        self.assertEqual(len(lines), 4)
+        
+        # Verify some data
+        self.assertIn("Netflix", csv_content)
+        self.assertIn("999", csv_content)
+        self.assertIn("Test User", csv_content)
+        self.assertIn("Entertainment", csv_content)
+    
+    def test_import_subscriptions_csv_api(self) -> None:
+        """Test CSV import with valid data"""
+        csv_content = """name,amount,interval,multiplier,user,category,active
+New Sub 1,500,monthly,1,Test User,Entertainment,true
+New Sub 2,200,weekly,2,Test User,Entertainment,true
+New Sub 3,1000,yearly,1,Test User,Entertainment,false"""
+        
+        response = self.client.post(
+            "/subscriptions/import/csv",
+            json={"file_content": csv_content}
+        )
+        
+        self.assertEqual(response.status_code, 201)
+        result = response.json()
+        
+        self.assertEqual(result["created"], 3)
+        self.assertEqual(result["failed"], 0)
+        self.assertEqual(len(result["errors"]), 0)
+    
+    def test_import_subscriptions_csv_with_errors_api(self) -> None:
+        """Test CSV import with validation errors"""
+        csv_content = """name,amount,interval,multiplier,user,category,active
+Valid Sub,500,monthly,1,Test User,Entertainment,true
+Invalid User,200,weekly,1,NonExistent User,Entertainment,true
+Invalid Category,300,monthly,1,Test User,NonExistent Category,true"""
+        
+        response = self.client.post(
+            "/subscriptions/import/csv",
+            json={"file_content": csv_content}
+        )
+        
+        self.assertEqual(response.status_code, 201)
+        result = response.json()
+        
+        self.assertEqual(result["created"], 1)  # Only Valid Sub should succeed
+        self.assertEqual(result["failed"], 2)
+        self.assertEqual(len(result["errors"]), 2)
+
+
 if __name__ == '__main__':
     unittest.main()

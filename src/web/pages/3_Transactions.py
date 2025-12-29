@@ -70,7 +70,7 @@ def load_categories():
 
 
 # Create tabs for different operations
-tab1, tab2, tab3, tab4 = st.tabs(["📋 View All", "➕ Create", "✏️ Update", "🗑️ Delete"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 View All", "➕ Create", "✏️ Update", "🗑️ Delete", "📁 Import/Export"])
 
 with tab1:
     st.subheader("All Transactions")
@@ -254,9 +254,85 @@ with tab4:
                 else:
                     st.error(f"❌ Failed to delete transaction: {data}")
 
+with tab5:
+    st.subheader("Import/Export CSV")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### 📤 Export")
+        st.markdown("Download all transactions as CSV file")
+        
+        if st.button("📥 Download CSV", type="primary", use_container_width=True):
+            success, data = api_client.export_transactions_csv()
+            if success:
+                st.download_button(
+                    label="💾 Save File",
+                    data=data,
+                    file_name="transactions.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+                st.success("✅ CSV ready for download")
+            else:
+                st.error(f"❌ Export failed: {data}")
+    
+    with col2:
+        st.markdown("### 📥 Import")
+        st.markdown("Upload CSV file to import transactions")
+        
+        uploaded_file = st.file_uploader("Choose CSV file", type=['csv'], key="import_transactions")
+        
+        if uploaded_file is not None:
+            try:
+                csv_content = uploaded_file.read().decode('utf-8')
+                
+                if st.button("📤 Import CSV", type="primary", use_container_width=True):
+                    success, data = api_client.import_transactions_csv(csv_content)
+                    if success:
+                        st.success(f"✅ Import completed!")
+                        st.json(data)
+                        if data.get('errors'):
+                            st.warning("⚠️ Some rows had errors:")
+                            for error in data['errors']:
+                                st.text(f"- {error}")
+                        load_transactions()
+                    else:
+                        st.error(f"❌ Import failed: {data}")
+            except Exception as e:
+                st.error(f"❌ Error reading file: {str(e)}")
+        
+        with st.expander("📋 CSV Format Guide"):
+            st.markdown("""
+            **Required columns:**
+            - `name`: Transaction name
+            - `amount`: Amount (positive number)
+            - `type`: income or expense
+            - `date`: Date in DD/MM/YYYY format (mandatory)
+            - `user`: User name (must exist)
+            - `category`: Category name (must exist)
+            
+            **Example:**
+            ```
+            name,amount,type,date,user,category
+            Salary,50000,income,15/01/2024,John Doe,Income
+            Groceries,2500,expense,16/01/2024,John Doe,Food
+            ```
+            """)
+
 # Sidebar info
 with st.sidebar:
     st.markdown("### 💡 Tips")
     st.markdown("""
-    - TODO
+    **General:**
+    - Track all income and expenses for better financial insights
+    - Use descriptive names for easy identification
+    - Assign appropriate categories for better organization
+    
+    **CSV Import/Export:**
+    - Use Export to backup your transactions
+    - Import CSV to bulk add transactions
+    - Date format must be DD/MM/YYYY
+    - Ensure user and category names exist before importing
+    - User and category names are case-sensitive
     """)

@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, status
+from typing import Any
+from fastapi import APIRouter, HTTPException, status, Body
+from fastapi.responses import Response
 from core.repositories.subscription import SubscriptionRepository
 from core.repositories.user import UserRepository
 from core.repositories.category import CategoryRepository
@@ -8,11 +10,13 @@ from core.models.category import Category
 from core.schemas.subscription import SubscriptionCreate, SubscriptionUpdate, SubscriptionResponse
 from core.utils import generate_uid
 from core.exceptions import DuplicateEntityError
+from core.services.subscription_service import SubscriptionService
 
 router: APIRouter = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
 subscription_repo: SubscriptionRepository = SubscriptionRepository()
 user_repo: UserRepository = UserRepository()
 category_repo: CategoryRepository = CategoryRepository()
+subscription_service: SubscriptionService = SubscriptionService()
 
 
 @router.post(path="/", response_model=SubscriptionResponse, status_code=status.HTTP_201_CREATED)
@@ -149,3 +153,19 @@ def delete_subscription(uid: str) -> None:
     success: bool = subscription_repo.delete(uid=uid)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subscription not found")
+
+@router.get(path="/export/csv", response_class=Response)
+def export_subscriptions_csv() -> Response:
+    """Export all subscriptions to CSV"""
+    csv_content: str = subscription_service.export_to_csv()
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=subscriptions.csv"}
+    )
+
+
+@router.post(path="/import/csv", status_code=status.HTTP_201_CREATED)
+def import_subscriptions_csv(file_content: str = Body(..., embed=True)) -> dict[str, Any]:
+    """Import subscriptions from CSV content"""
+    return subscription_service.import_from_csv(csv_content=file_content)

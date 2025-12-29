@@ -246,3 +246,54 @@ def delete_subscription(uid: str) -> tuple[bool, Any]:
         return handle_response(response)
     except Exception as e:
         return False, f"Connection error: {str(e)}"
+
+
+
+# CSV Export/Import for Subscriptions
+def export_subscriptions_csv() -> tuple[bool, Any]:
+    """Export subscriptions to CSV"""
+    try:
+        response = requests.get(f"{BASE_URL}/subscriptions/export/csv")
+        if response.status_code == 200:
+            return True, response.text
+        else:
+            return False, f"Error {response.status_code}: Failed to export"
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def import_subscriptions_csv(csv_content: str) -> tuple[bool, Any]:
+    """Import subscriptions from CSV"""
+    try:
+        response = requests.post(
+            f"{BASE_URL}/subscriptions/import/csv",
+            json={"file_content": csv_content}
+        )
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+# CSV Export/Import for Transactions
+def export_transactions_csv() -> tuple[bool, Any]:
+    """Export transactions to CSV"""
+    try:
+        response = requests.get(f"{BASE_URL}/transactions/export/csv")
+        if response.status_code == 200:
+            return True, response.text
+        else:
+            return False, f"Error {response.status_code}: Failed to export"
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def import_transactions_csv(csv_content: str) -> tuple[bool, Any]:
+    """Import transactions from CSV"""
+    try:
+        response = requests.post(
+            f"{BASE_URL}/transactions/import/csv",
+            json={"file_content": csv_content}
+        )
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"

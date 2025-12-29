@@ -177,5 +177,79 @@ class TestTransaction(unittest.TestCase):
         self.assertEqual(deleted.status_code, 404)
 
 
+    def test_export_transactions_csv_api(self) -> None:
+        """Test CSV export with 3 dummy transactions"""
+        # Create 3 transactions
+        transactions_data = [
+            {"name": "Salary", "amount": 50000, "datetime": 1704067200.0, "type": "income"},
+            {"name": "Groceries", "amount": 2500, "datetime": 1704153600.0, "type": "expense"},
+            {"name": "Restaurant", "amount": 1200, "datetime": 1704240000.0, "type": "expense"}
+        ]
+        
+        for txn_data in transactions_data:
+            txn_data["user_uid"] = self.user.uid
+            txn_data["category_uid"] = self.category.uid
+            self.client.post("/transactions/", json=txn_data)
+        
+        # Export CSV
+        response = self.client.get("/transactions/export/csv")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["content-type"], "text/csv; charset=utf-8")
+        
+        csv_content = response.text
+        lines = csv_content.strip().split('\n')
+        
+        # Check header
+        self.assertEqual(lines[0], "name,amount,date,type,user,category")
+        
+        # Check we have 3 data rows + 1 header
+        self.assertEqual(len(lines), 4)
+        
+        # Verify some data
+        self.assertIn("Salary", csv_content)
+        self.assertIn("50000", csv_content)
+        self.assertIn("income", csv_content)
+        self.assertIn("Test User", csv_content)
+    
+    def test_import_transactions_csv_api(self) -> None:
+        """Test CSV import with DD/MM/YYYY format"""
+        csv_content = """name,amount,type,date,user,category
+New Txn 1,5000,income,01/01/2024,Test User,Groceries
+New Txn 2,1500,expense,02/01/2024,Test User,Groceries
+New Txn 3,800,expense,03/01/2024,Test User,Groceries"""
+        
+        response = self.client.post(
+            "/transactions/import/csv",
+            json={"file_content": csv_content}
+        )
+        
+        self.assertEqual(response.status_code, 201)
+        result = response.json()
+        
+        self.assertEqual(result["created"], 3)
+        self.assertEqual(result["failed"], 0)
+        self.assertEqual(len(result["errors"]), 0)
+    
+    def test_import_transactions_csv_with_errors_api(self) -> None:
+        """Test CSV import with validation errors"""
+        csv_content = """name,amount,type,date,user,category
+Valid Txn,5000,income,01/01/2024,Test User,Groceries
+Invalid User,1500,expense,02/01/2024,NonExistent User,Groceries
+Invalid Date,800,expense,invalid-date,Test User,Groceries"""
+        
+        response = self.client.post(
+            "/transactions/import/csv",
+            json={"file_content": csv_content}
+        )
+        
+        self.assertEqual(response.status_code, 201)
+        result = response.json()
+        
+        # One should succeed, two should fail (Invalid User and Invalid Date)
+        self.assertEqual(result["created"], 1)
+        self.assertEqual(result["failed"], 2)
+        self.assertEqual(len(result["errors"]), 2)
+
+
 if __name__ == '__main__':
     unittest.main()

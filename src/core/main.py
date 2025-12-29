@@ -1,11 +1,9 @@
-from turtle import st
 from typing import Any
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from core.api.users import router as users_router
-from core.api.categories import router as categories_router
-from core.api.transactions import router as transactions_router
-from core.api.subscriptions import router as subscriptions_router
+from core.apis.users import router as users_router
+from core.apis.categories import router as categories_router
+from core.apis.transactions import router as transactions_router
+from core.apis.subscriptions import router as subscriptions_router
 from core.database import init_database
 
 app: FastAPI = FastAPI(

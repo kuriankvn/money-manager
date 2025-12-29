@@ -176,5 +176,8 @@ with tab4:
 with st.sidebar:
     st.markdown("### 💡 Tips")
     st.markdown("""
-    - TODO
+    - Categories help organize transactions and subscriptions
+    - Each category belongs to a specific user
+    - Use descriptive names like "Food", "Entertainment", "Utilities"
+    - Categories can be reused across multiple transactions
     """)

@@ -63,7 +63,7 @@ def load_categories():
 
 
 # Create tabs for different operations
-tab1, tab2, tab3, tab4 = st.tabs(["📋 View All", "➕ Create", "✏️ Update", "🗑️ Delete"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["📋 View All", "➕ Create", "✏️ Update", "🗑️ Delete", "📁 Import/Export"])
 
 with tab1:
     st.subheader("All Subscriptions")
@@ -261,9 +261,86 @@ with tab4:
                 else:
                     st.error(f"❌ Failed to delete subscription: {data}")
 
+with tab5:
+    st.subheader("Import/Export CSV")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### 📤 Export")
+        st.markdown("Download all subscriptions as CSV file")
+        
+        if st.button("📥 Download CSV", type="primary", use_container_width=True):
+            success, data = api_client.export_subscriptions_csv()
+            if success:
+                st.download_button(
+                    label="💾 Save File",
+                    data=data,
+                    file_name="subscriptions.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+                st.success("✅ CSV ready for download")
+            else:
+                st.error(f"❌ Export failed: {data}")
+    
+    with col2:
+        st.markdown("### 📥 Import")
+        st.markdown("Upload CSV file to import subscriptions")
+        
+        uploaded_file = st.file_uploader("Choose CSV file", type=['csv'], key="import_subscriptions")
+        
+        if uploaded_file is not None:
+            try:
+                csv_content = uploaded_file.read().decode('utf-8')
+                
+                if st.button("📤 Import CSV", type="primary", use_container_width=True):
+                    success, data = api_client.import_subscriptions_csv(csv_content)
+                    if success:
+                        st.success(f"✅ Import completed!")
+                        st.json(data)
+                        if data.get('errors'):
+                            st.warning("⚠️ Some rows had errors:")
+                            for error in data['errors']:
+                                st.text(f"- {error}")
+                        load_subscriptions()
+                    else:
+                        st.error(f"❌ Import failed: {data}")
+            except Exception as e:
+                st.error(f"❌ Error reading file: {str(e)}")
+        
+        with st.expander("📋 CSV Format Guide"):
+            st.markdown("""
+            **Required columns:**
+            - `name`: Subscription name
+            - `amount`: Amount (positive number)
+            - `interval`: daily, weekly, monthly, or yearly
+            - `multiplier`: Integer >= 1 (optional, defaults to 1)
+            - `user`: User name (must exist)
+            - `category`: Category name (must exist)
+            - `active`: true/false (optional, defaults to true)
+            
+            **Example:**
+            ```
+            name,amount,interval,multiplier,user,category,active
+            Netflix,999,monthly,1,John Doe,Entertainment,true
+            Spotify,119,monthly,1,John Doe,Music,true
+            ```
+            """)
+
 # Sidebar info
 with st.sidebar:
     st.markdown("### 💡 Tips")
     st.markdown("""
-    - TODO
+    **General:**
+    - Manage recurring payments and subscriptions
+    - Set interval (daily, weekly, monthly, yearly) and multiplier
+    - Toggle active status to pause without deleting
+    - Track total monthly/yearly subscription costs
+    
+    **CSV Import/Export:**
+    - Use Export to backup your subscriptions
+    - Import CSV to bulk add subscriptions
+    - Ensure user and category names exist before importing
+    - User and category names are case-sensitive
     """)
