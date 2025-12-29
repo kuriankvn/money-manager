@@ -7,7 +7,7 @@ from datetime import datetime
 
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from money_manager_streamlit_ui import api_client
+from web import api_client
 
 
 st.set_page_config(page_title="Transactions", page_icon="💳", layout="wide")

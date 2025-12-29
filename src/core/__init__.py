@@ -1,13 +1,13 @@
 """Money Manager Package - Main Package"""
-from money_manager.database import init_database, get_connection
-from money_manager.repositories import (
+from core.database import init_database, get_connection
+from core.repositories import (
     IRepository,
     UserRepository,
     CategoryRepository,
     TransactionRepository,
     SubscriptionRepository,
 )
-from money_manager.models import (
+from core.models import (
     User,
     Category,
     Transaction,

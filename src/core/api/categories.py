@@ -1,10 +1,10 @@
 from fastapi import APIRouter, HTTPException, status
-from money_manager.repositories.category import CategoryRepository
-from money_manager.repositories.user import UserRepository
-from money_manager.models.category import Category
-from money_manager.models.user import User
-from money_manager.schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse
-from money_manager.utils import generate_uid
+from core.repositories.category import CategoryRepository
+from core.repositories.user import UserRepository
+from core.models.category import Category
+from core.models.user import User
+from core.schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse
+from core.utils import generate_uid
 
 router: APIRouter = APIRouter(prefix="/categories", tags=["categories"])
 category_repo: CategoryRepository = CategoryRepository()

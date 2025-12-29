@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from money_manager.models.user import User
+from core.models.user import User
 
 
 @dataclass

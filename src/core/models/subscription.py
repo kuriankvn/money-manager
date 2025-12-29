@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import StrEnum
-from money_manager.models.user import User
-from money_manager.models.category import Category
+from core.models.user import User
+from core.models.category import Category
 
 
 class Interval(StrEnum):

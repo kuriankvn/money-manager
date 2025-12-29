@@ -1,12 +1,12 @@
 import sqlite3
 from typing import Any, Optional
-from money_manager.database import get_connection
-from money_manager.repositories.base import IRepository
-from money_manager.repositories.user import UserRepository
-from money_manager.repositories.category import CategoryRepository
-from money_manager.models.user import User
-from money_manager.models.category import Category
-from money_manager.models.subscription import Subscription, Interval
+from core.database import get_connection
+from core.repositories.base import IRepository
+from core.repositories.user import UserRepository
+from core.repositories.category import CategoryRepository
+from core.models.user import User
+from core.models.category import Category
+from core.models.subscription import Subscription, Interval
 
 
 class SubscriptionRepository(IRepository[Subscription]):

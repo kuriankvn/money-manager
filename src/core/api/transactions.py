@@ -1,12 +1,12 @@
 from fastapi import APIRouter, HTTPException, status
-from money_manager.repositories.transaction import TransactionRepository
-from money_manager.repositories.user import UserRepository
-from money_manager.repositories.category import CategoryRepository
-from money_manager.models.transaction import Transaction, TransactionType
-from money_manager.models.user import User
-from money_manager.models.category import Category
-from money_manager.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionResponse
-from money_manager.utils import generate_uid
+from core.repositories.transaction import TransactionRepository
+from core.repositories.user import UserRepository
+from core.repositories.category import CategoryRepository
+from core.models.transaction import Transaction, TransactionType
+from core.models.user import User
+from core.models.category import Category
+from core.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionResponse
+from core.utils import generate_uid
 
 router: APIRouter = APIRouter(prefix="/transactions", tags=["transactions"])
 transaction_repo: TransactionRepository = TransactionRepository()

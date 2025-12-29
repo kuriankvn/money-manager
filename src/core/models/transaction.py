@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from enum import StrEnum
-from money_manager.models.user import User
-from money_manager.models.category import Category
-from money_manager.utils import epoch_to_datetime
+from core.models.user import User
+from core.models.category import Category
+from core.utils import epoch_to_datetime
 
 
 class TransactionType(StrEnum):

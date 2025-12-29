@@ -2,11 +2,11 @@ from turtle import st
 from typing import Any
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from money_manager.api.users import router as users_router
-from money_manager.api.categories import router as categories_router
-from money_manager.api.transactions import router as transactions_router
-from money_manager.api.subscriptions import router as subscriptions_router
-from money_manager.database import init_database
+from core.api.users import router as users_router
+from core.api.categories import router as categories_router
+from core.api.transactions import router as transactions_router
+from core.api.subscriptions import router as subscriptions_router
+from core.database import init_database
 
 app: FastAPI = FastAPI(
     title="Money Manager API",
@@ -55,7 +55,7 @@ def main() -> None:
         return
     
     import uvicorn
-    uvicorn.run(app="money_manager.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run(app="core.main:app", host="0.0.0.0", port=8000, reload=True)
 
 
 if __name__ == "__main__":

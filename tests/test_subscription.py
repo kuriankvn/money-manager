@@ -1,11 +1,11 @@
 import unittest
 import os
 import tempfile
-from money_manager.database import init_user_tables, init_category_tables, init_subscription_tables
-from money_manager.models import User, Category, Subscription, Interval
-from money_manager.repositories import UserRepository, CategoryRepository, SubscriptionRepository
+from core.database import init_user_tables, init_category_tables, init_subscription_tables
+from core.models import User, Category, Subscription, Interval
+from core.repositories import UserRepository, CategoryRepository, SubscriptionRepository
 from fastapi.testclient import TestClient
-from money_manager.main import app
+from core.main import app
 
 
 class TestSubscription(unittest.TestCase):

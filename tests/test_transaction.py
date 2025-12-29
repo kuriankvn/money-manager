@@ -1,11 +1,11 @@
 import unittest
 import os
 import tempfile
-from money_manager.database import init_user_tables, init_category_tables, init_transaction_tables
-from money_manager.models import User, Category, Transaction, TransactionType
-from money_manager.repositories import UserRepository, CategoryRepository, TransactionRepository
+from core.database import init_user_tables, init_category_tables, init_transaction_tables
+from core.models import User, Category, Transaction, TransactionType
+from core.repositories import UserRepository, CategoryRepository, TransactionRepository
 from fastapi.testclient import TestClient
-from money_manager.main import app
+from core.main import app
 
 
 class TestTransaction(unittest.TestCase):

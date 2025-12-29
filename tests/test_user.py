@@ -1,11 +1,11 @@
 import unittest
 import os
 import tempfile
-from money_manager.database import init_user_tables, get_connection
-from money_manager.models import User
-from money_manager.repositories import UserRepository
+from core.database import init_user_tables, get_connection
+from core.models import User
+from core.repositories import UserRepository
 from fastapi.testclient import TestClient
-from money_manager.main import app
+from core.main import app
 
 
 class TestUser(unittest.TestCase):

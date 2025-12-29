@@ -29,7 +29,7 @@
 - install dev dependencies: `pip install -e ".[dev]"`
 - run tests: `pytest`
 - run application: `money-manager`
-- run gradio ui: `money-manager-gradio-ui`
+- run gradio ui: `money_manager_streamlit_ui`
 - remove dependencies: `pip uninstall -y money-manager && pip freeze | xargs pip uninstall -y`
 
 ## run in release edit mode

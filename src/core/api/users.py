@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, status
-from money_manager.repositories.user import UserRepository
-from money_manager.models.user import User
-from money_manager.schemas.user import UserCreate, UserUpdate, UserResponse
-from money_manager.utils import generate_uid
+from core.repositories.user import UserRepository
+from core.models.user import User
+from core.schemas.user import UserCreate, UserUpdate, UserResponse
+from core.utils import generate_uid
 
 router: APIRouter = APIRouter(prefix="/users", tags=["users"])
 user_repo: UserRepository = UserRepository()
