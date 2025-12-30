@@ -25,88 +25,14 @@ def get_connection() -> sqlite3.Connection:
     return sqlite3.connect(database=db_path)
 
 
-def init_user_tables() -> None:
-    """Initialize user tables only"""
-    conn: sqlite3.Connection = get_connection()
-    cursor: sqlite3.Cursor = conn.cursor()
-    
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            uid TEXT PRIMARY KEY,
-            name TEXT NOT NULL UNIQUE)
-    """)
-    
-    conn.commit()
-    conn.close()
-
-
-def init_category_tables() -> None:
-    """Initialize category tables only"""
-    conn: sqlite3.Connection = get_connection()
-    cursor: sqlite3.Cursor = conn.cursor()
-    
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS categories (
-            uid TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            user_uid TEXT NOT NULL,
-            FOREIGN KEY (user_uid) REFERENCES users(uid),
-            UNIQUE(name, user_uid))
-    """)
-    
-    conn.commit()
-    conn.close()
-
-
-def init_transaction_tables() -> None:
-    """Initialize transaction tables (requires user and category tables)"""
-    conn: sqlite3.Connection = get_connection()
-    cursor: sqlite3.Cursor = conn.cursor()
-    
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS transactions (
-            uid TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            amount REAL NOT NULL,
-            datetime REAL NOT NULL,
-            type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
-            user_uid TEXT NOT NULL,
-            category_uid TEXT NOT NULL,
-            FOREIGN KEY (user_uid) REFERENCES users(uid),
-            FOREIGN KEY (category_uid) REFERENCES categories(uid))
-    """)
-    
-    conn.commit()
-    conn.close()
-
-
-def init_subscription_tables() -> None:
-    """Initialize subscription tables (requires user and category tables)"""
-    conn: sqlite3.Connection = get_connection()
-    cursor: sqlite3.Cursor = conn.cursor()
-    
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS subscriptions (
-            uid TEXT PRIMARY KEY,
-            name TEXT NOT NULL,
-            amount REAL NOT NULL,
-            interval TEXT NOT NULL CHECK (interval IN ('monthly', 'yearly')),
-            multiplier INTEGER NOT NULL,
-            user_uid TEXT NOT NULL,
-            category_uid TEXT NOT NULL,
-            active BOOLEAN NOT NULL,
-            FOREIGN KEY (user_uid) REFERENCES users(uid),
-            FOREIGN KEY (category_uid) REFERENCES categories(uid),
-            UNIQUE(name, user_uid))
-    """)
-    
-    conn.commit()
-    conn.close()
-
-
 def init_database() -> None:
     """Initialize all database tables for money_manager"""
-    init_user_tables()
-    init_category_tables()
+    from .transactions import init_transaction_tables
+    from .subscriptions import init_subscription_tables
+    from .investments import init_investment_tables
+    
     init_transaction_tables()
     init_subscription_tables()
+    init_investment_tables()
+
+# Made with Bob
