@@ -67,14 +67,14 @@ class SubscriptionSchema(BaseModel):
     status: SubscriptionStatus
 
     @model_validator(mode="after")
-    def validate_due_month(cls, values) -> Any:
-        freq: str = values.frequency
-        due_month: Optional[int] = values.due_month
+    def validate_due_month(self) -> Any:
+        freq: str = self.frequency
+        due_month: Optional[int] = self.due_month
         if freq == "monthly" and due_month is not None:
             raise ValueError("due_month must be null for monthly subscriptions")
         if freq == "yearly" and due_month is None:
             raise ValueError("due_month is required for yearly subscriptions")
-        return values
+        return self
 
 
 class SubscriptionResponse(BaseModel):

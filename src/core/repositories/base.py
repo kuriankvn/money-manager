@@ -1,8 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Optional, TypeVar, Generic, Any
 import sqlite3
+from datetime import date
 from core.storage.init_db import get_connection
 from core.utils import DuplicateEntityError
+
+# Register date adapters for SQLite (Python 3.12+ compatibility)
+sqlite3.register_adapter(date, lambda d: d.isoformat())
+sqlite3.register_converter("date", lambda s: date.fromisoformat(s.decode()))
 
 T = TypeVar(name='T')
 

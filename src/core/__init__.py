@@ -2,17 +2,14 @@
 from core.storage import init_database, get_connection
 from core.repositories import (
     IRepository,
-    UserRepository,
     CategoryRepository,
     TransactionRepository,
     SubscriptionRepository,
 )
 from core.domain import (
-    User,
     Category,
     Transaction,
     Subscription,
-    Interval,
 )
 
 __version__ = "0.1.0"
@@ -21,13 +18,10 @@ __all__ = [
     "init_database",
     "get_connection",
     "IRepository",
-    "User",
-    "UserRepository",
     "Category",
     "CategoryRepository",
     "Transaction",
     "TransactionRepository",
     "Subscription",
-    "Interval",
     "SubscriptionRepository",
 ]
