@@ -1,9 +1,16 @@
 from typing import Any
 from fastapi import FastAPI
-from core.controller.users import router as users_router
-from core.controller.categories import router as categories_router
-from core.controller.transactions import router as transactions_router
-from core.controller.subscriptions import router as subscriptions_router
+from core.controller import (
+    categories_router,
+    accounts_router,
+    transactions_router,
+    subscriptions_router,
+    subscription_instances_router,
+    investments_router,
+    investment_snapshots_router,
+    investment_plans_router,
+    investment_plan_instances_router
+)
 from core.storage import init_database
 
 app: FastAPI = FastAPI(
@@ -12,10 +19,15 @@ app: FastAPI = FastAPI(
     version="0.1.0"
 )
 
-app.include_router(router=users_router)
 app.include_router(router=categories_router)
+app.include_router(router=accounts_router)
 app.include_router(router=transactions_router)
 app.include_router(router=subscriptions_router)
+app.include_router(router=subscription_instances_router)
+app.include_router(router=investments_router)
+app.include_router(router=investment_snapshots_router)
+app.include_router(router=investment_plans_router)
+app.include_router(router=investment_plan_instances_router)
 
 
 @app.get(path="/")
@@ -25,10 +37,15 @@ def root() -> dict[str, Any]:
         "message": "Money Manager API",
         "version": "0.1.0",
         "endpoints": {
-            "users": "/users",
             "categories": "/categories",
+            "accounts": "/accounts",
             "transactions": "/transactions",
             "subscriptions": "/subscriptions",
+            "subscription_instances": "/subscription-instances",
+            "investments": "/investments",
+            "investment_snapshots": "/investment-snapshots",
+            "investment_plans": "/investment-plans",
+            "investment_plan_instances": "/investment-plan-instances",
             "docs": "/docs"
         }
     }
