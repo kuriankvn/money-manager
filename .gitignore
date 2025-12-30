@@ -16,3 +16,6 @@ dist/
 
 # database files
 money_manager.db
+
+# mac files
+.DS_Store

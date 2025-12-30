@@ -21,9 +21,9 @@ classifiers = [
 ]
 dependencies = [
     "python-dotenv==1.2.1",
-    "python-dateutil==2.9.0",
     "fastapi==0.128.0",
     "uvicorn[standard]==0.40.0",
+
     "streamlit==1.52.2",
 ]
 
@@ -34,14 +34,12 @@ dev = [
 ]
 
 [project.scripts]
-money-manager = "app.main:main"
-money-manager-api = "app.api.main:run_server"
-money-manager-web = "app.web.main:run_app"
+money-manager = "core.main:main"
+money-manager-web = "web.main:main"
 
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["app*"]
+where = ["src"]
 
 [tool.pytest.ini_options]
-pythonpath = ["."]
+pythonpath = ["src"]
 testpaths = ["tests"]
