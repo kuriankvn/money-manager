@@ -1,15 +1,11 @@
-from typing import Any
+from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, status, Body
 from fastapi.responses import Response
-from core.repositories.transaction import TransactionRepository
-from core.repositories.user import UserRepository
-from core.repositories.category import CategoryRepository
-from core.models.transaction import Transaction, TransactionType
-from core.models.user import User
-from core.models.category import Category
-from core.schemas.transaction import TransactionCreate, TransactionUpdate, TransactionResponse
+from core.repositories import TransactionRepository, UserRepository, CategoryRepository
+from core.models import Transaction, TransactionType, User, Category
+from core.schemas import TransactionSchema, TransactionResponse
 from core.utils import generate_uid
-from core.services.transaction_service import TransactionService
+from core.services import TransactionService
 
 router: APIRouter = APIRouter(prefix="/transactions", tags=["transactions"])
 transaction_repo: TransactionRepository = TransactionRepository()
@@ -19,13 +15,13 @@ transaction_service: TransactionService = TransactionService()
 
 
 @router.post(path="/", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
-def create_transaction(transaction_data: TransactionCreate) -> TransactionResponse:
+def create_transaction(transaction_data: TransactionSchema) -> TransactionResponse:
     """Create a new transaction"""
-    user: User | None = user_repo.get_by_id(uid=transaction_data.user_uid)
+    user: Optional[User] = user_repo.get_by_id(uid=transaction_data.user_uid)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
-    category: Category | None = category_repo.get_by_id(uid=transaction_data.category_uid)
+    category: Optional[Category] = category_repo.get_by_id(uid=transaction_data.category_uid)
     if not category:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     
@@ -34,7 +30,7 @@ def create_transaction(transaction_data: TransactionCreate) -> TransactionRespon
         uid=uid,
         name=transaction_data.name,
         amount=transaction_data.amount,
-        datetime=transaction_data.datetime,
+        date=transaction_data.date,
         type=TransactionType(value=transaction_data.type),
         user=user,
         category=category
@@ -44,7 +40,7 @@ def create_transaction(transaction_data: TransactionCreate) -> TransactionRespon
         uid=transaction.uid,
         name=transaction.name,
         amount=transaction.amount,
-        datetime=transaction.datetime,
+        date=transaction.date,
         type=transaction.type.value,
         user_uid=user.uid,
         user_name=user.name,
@@ -56,14 +52,14 @@ def create_transaction(transaction_data: TransactionCreate) -> TransactionRespon
 @router.get(path="/{uid}", response_model=TransactionResponse)
 def get_transaction(uid: str) -> TransactionResponse:
     """Get transaction by ID"""
-    transaction: Transaction | None = transaction_repo.get_by_id(uid=uid)
+    transaction: Optional[Transaction] = transaction_repo.get_by_id(uid=uid)
     if not transaction:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
     return TransactionResponse(
         uid=transaction.uid,
         name=transaction.name,
         amount=transaction.amount,
-        datetime=transaction.datetime,
+        date=transaction.date,
         type=transaction.type.value,
         user_uid=transaction.user.uid,
         user_name=transaction.user.name,
@@ -81,7 +77,7 @@ def get_all_transactions() -> list[TransactionResponse]:
             uid=txn.uid,
             name=txn.name,
             amount=txn.amount,
-            datetime=txn.datetime,
+            date=txn.date,
             type=txn.type.value,
             user_uid=txn.user.uid,
             user_name=txn.user.name,
@@ -93,17 +89,17 @@ def get_all_transactions() -> list[TransactionResponse]:
 
 
 @router.put(path="/{uid}", response_model=TransactionResponse)
-def update_transaction(uid: str, transaction_data: TransactionUpdate) -> TransactionResponse:
+def update_transaction(uid: str, transaction_data: TransactionSchema) -> TransactionResponse:
     """Update transaction"""
-    existing_transaction: Transaction | None = transaction_repo.get_by_id(uid=uid)
+    existing_transaction: Optional[Transaction] = transaction_repo.get_by_id(uid=uid)
     if not existing_transaction:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
     
-    user: User | None = user_repo.get_by_id(uid=transaction_data.user_uid)
+    user: Optional[User] = user_repo.get_by_id(uid=transaction_data.user_uid)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
-    category: Category | None = category_repo.get_by_id(uid=transaction_data.category_uid)
+    category: Optional[Category] = category_repo.get_by_id(uid=transaction_data.category_uid)
     if not category:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     
@@ -111,7 +107,7 @@ def update_transaction(uid: str, transaction_data: TransactionUpdate) -> Transac
         uid=uid,
         name=transaction_data.name,
         amount=transaction_data.amount,
-        datetime=transaction_data.datetime,
+        date=transaction_data.date,
         type=TransactionType(value=transaction_data.type),
         user=user,
         category=category
@@ -124,7 +120,7 @@ def update_transaction(uid: str, transaction_data: TransactionUpdate) -> Transac
         uid=transaction.uid,
         name=transaction.name,
         amount=transaction.amount,
-        datetime=transaction.datetime,
+        date=transaction.date,
         type=transaction.type.value,
         user_uid=user.uid,
         user_name=user.name,
@@ -154,6 +150,6 @@ def export_transactions_csv() -> Response:
 
 
 @router.post(path="/import/csv", status_code=status.HTTP_201_CREATED)
-def import_transactions_csv(file_content: str = Body(..., embed=True)) -> dict[str, Any]:
-    """Import transactions from CSV content"""
+def import_transactions_csv(file_content: str = Body(default=..., embed=True)) -> dict[str, Any]:
+    """Import transactions from CSV"""
     return transaction_service.import_from_csv(csv_content=file_content)

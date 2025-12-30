@@ -5,6 +5,3 @@ from dataclasses import dataclass
 class User:
     uid: str
     name: str
-    
-    def __str__(self) -> str:
-        return self.name

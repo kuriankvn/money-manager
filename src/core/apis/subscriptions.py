@@ -1,16 +1,12 @@
-from typing import Any
+from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, status, Body
 from fastapi.responses import Response
-from core.repositories.subscription import SubscriptionRepository
-from core.repositories.user import UserRepository
-from core.repositories.category import CategoryRepository
-from core.models.subscription import Subscription, Interval
-from core.models.user import User
-from core.models.category import Category
-from core.schemas.subscription import SubscriptionCreate, SubscriptionUpdate, SubscriptionResponse
+from core.repositories import SubscriptionRepository, UserRepository, CategoryRepository
+from core.models import Subscription, Interval, User, Category
+from core.schemas import SubscriptionSchema, SubscriptionResponse
 from core.utils import generate_uid
 from core.exceptions import DuplicateEntityError
-from core.services.subscription_service import SubscriptionService
+from core.services import SubscriptionService
 
 router: APIRouter = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
 subscription_repo: SubscriptionRepository = SubscriptionRepository()
@@ -20,13 +16,13 @@ subscription_service: SubscriptionService = SubscriptionService()
 
 
 @router.post(path="/", response_model=SubscriptionResponse, status_code=status.HTTP_201_CREATED)
-def create_subscription(subscription_data: SubscriptionCreate) -> SubscriptionResponse:
+def create_subscription(subscription_data: SubscriptionSchema) -> SubscriptionResponse:
     """Create a new subscription"""
-    user: User | None = user_repo.get_by_id(uid=subscription_data.user_uid)
+    user: Optional[User] = user_repo.get_by_id(uid=subscription_data.user_uid)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
-    category: Category | None = category_repo.get_by_id(uid=subscription_data.category_uid)
+    category: Optional[Category] = category_repo.get_by_id(uid=subscription_data.category_uid)
     if not category:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     
@@ -63,7 +59,7 @@ def create_subscription(subscription_data: SubscriptionCreate) -> SubscriptionRe
 @router.get(path="/{uid}", response_model=SubscriptionResponse)
 def get_subscription(uid: str) -> SubscriptionResponse:
     """Get subscription by ID"""
-    subscription: Subscription | None = subscription_repo.get_by_id(uid=uid)
+    subscription: Optional[Subscription] = subscription_repo.get_by_id(uid=uid)
     if not subscription:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subscription not found")
     return SubscriptionResponse(
@@ -102,17 +98,17 @@ def get_all_subscriptions() -> list[SubscriptionResponse]:
 
 
 @router.put(path="/{uid}", response_model=SubscriptionResponse)
-def update_subscription(uid: str, subscription_data: SubscriptionUpdate) -> SubscriptionResponse:
+def update_subscription(uid: str, subscription_data: SubscriptionSchema) -> SubscriptionResponse:
     """Update subscription"""
-    existing_subscription: Subscription | None = subscription_repo.get_by_id(uid=uid)
+    existing_subscription: Optional[Subscription] = subscription_repo.get_by_id(uid=uid)
     if not existing_subscription:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subscription not found")
     
-    user: User | None = user_repo.get_by_id(uid=subscription_data.user_uid)
+    user: Optional[User] = user_repo.get_by_id(uid=subscription_data.user_uid)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
-    category: Category | None = category_repo.get_by_id(uid=subscription_data.category_uid)
+    category: Optional[Category] = category_repo.get_by_id(uid=subscription_data.category_uid)
     if not category:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     
@@ -166,6 +162,6 @@ def export_subscriptions_csv() -> Response:
 
 
 @router.post(path="/import/csv", status_code=status.HTTP_201_CREATED)
-def import_subscriptions_csv(file_content: str = Body(..., embed=True)) -> dict[str, Any]:
-    """Import subscriptions from CSV content"""
+def import_subscriptions_csv(file_content: str = Body(default=..., embed=True)) -> dict[str, Any]:
+    """Import subscriptions from CSV"""
     return subscription_service.import_from_csv(csv_content=file_content)

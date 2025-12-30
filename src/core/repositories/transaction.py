@@ -1,12 +1,8 @@
 import sqlite3
 from typing import Any, Optional
 from core.database import get_connection
-from core.repositories.base import IRepository
-from core.models.transaction import Transaction, TransactionType
-from core.models.user import User
-from core.repositories.user import UserRepository
-from core.models.category import Category
-from core.repositories.category import CategoryRepository
+from core.repositories import IRepository, UserRepository, CategoryRepository
+from core.models import Transaction, TransactionType, User, Category
 
 
 class TransactionRepository(IRepository[Transaction]):
@@ -19,7 +15,7 @@ class TransactionRepository(IRepository[Transaction]):
         cursor: sqlite3.Cursor = connection.cursor()
         cursor.execute(
             """INSERT INTO transactions (uid, name, amount, datetime, type, user_uid, category_uid) VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (entity.uid, entity.name, entity.amount, entity.datetime, entity.type.value, entity.user.uid, entity.category.uid))
+            (entity.uid, entity.name, entity.amount, entity.date, entity.type.value, entity.user.uid, entity.category.uid))
         connection.commit()
         connection.close()
         return entity.uid
@@ -44,7 +40,7 @@ class TransactionRepository(IRepository[Transaction]):
                 uid=row[0],
                 name=row[1],
                 amount=row[2],
-                datetime=row[3],
+                date=row[3],
                 type=TransactionType(value=row[4]),
                 user=user,
                 category=category)
@@ -66,7 +62,7 @@ class TransactionRepository(IRepository[Transaction]):
                     uid=row[0],
                     name=row[1],
                     amount=row[2],
-                    datetime=row[3],
+                    date=row[3],
                     type=TransactionType(value=row[4]),
                     user=user,
                     category=category))
@@ -78,7 +74,7 @@ class TransactionRepository(IRepository[Transaction]):
         
         cursor.execute(
             """UPDATE transactions SET name = ?, amount = ?, datetime = ?, type = ?, user_uid = ?, category_uid = ? WHERE uid = ?""",
-            (entity.name, entity.amount, entity.datetime, entity.type.value, entity.user.uid, entity.category.uid, entity.uid))
+            (entity.name, entity.amount, entity.date, entity.type.value, entity.user.uid, entity.category.uid, entity.uid))
         affected: int = cursor.rowcount
         connection.commit()
         connection.close()

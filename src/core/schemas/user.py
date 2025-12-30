@@ -1,11 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict
 
 
-class UserCreate(BaseModel):
-    name: str = Field(default=..., min_length=1, max_length=100)
-
-
-class UserUpdate(BaseModel):
+class UserSchema(BaseModel):
     name: str = Field(default=..., min_length=1, max_length=100)
 
 

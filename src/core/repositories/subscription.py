@@ -1,12 +1,8 @@
 import sqlite3
 from typing import Any, Optional
 from core.database import get_connection
-from core.repositories.base import IRepository
-from core.repositories.user import UserRepository
-from core.repositories.category import CategoryRepository
-from core.models.user import User
-from core.models.category import Category
-from core.models.subscription import Subscription, Interval
+from core.repositories import IRepository, UserRepository, CategoryRepository
+from core.models import User, Category, Subscription, Interval
 from core.exceptions import DuplicateEntityError
 
 

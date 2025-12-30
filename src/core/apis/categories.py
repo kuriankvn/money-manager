@@ -1,9 +1,8 @@
+from typing import Optional
 from fastapi import APIRouter, HTTPException, status
-from core.repositories.category import CategoryRepository
-from core.repositories.user import UserRepository
-from core.models.category import Category
-from core.models.user import User
-from core.schemas.category import CategoryCreate, CategoryUpdate, CategoryResponse
+from core.repositories import CategoryRepository, UserRepository
+from core.models import Category, User
+from core.schemas import CategorySchema, CategoryResponse
 from core.utils import generate_uid
 from core.exceptions import DuplicateEntityError
 
@@ -13,9 +12,9 @@ user_repo: UserRepository = UserRepository()
 
 
 @router.post(path="/", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
-def create_category(category_data: CategoryCreate) -> CategoryResponse:
+def create_category(category_data: CategorySchema) -> CategoryResponse:
     """Create a new category"""
-    user: User | None = user_repo.get_by_id(uid=category_data.user_uid)
+    user: Optional[User] = user_repo.get_by_id(uid=category_data.user_uid)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
@@ -37,7 +36,7 @@ def create_category(category_data: CategoryCreate) -> CategoryResponse:
 @router.get(path="/{uid}", response_model=CategoryResponse)
 def get_category(uid: str) -> CategoryResponse:
     """Get category by ID"""
-    category: Category | None = category_repo.get_by_id(uid=uid)
+    category: Optional[Category] = category_repo.get_by_id(uid=uid)
     if not category:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     return CategoryResponse(
@@ -64,13 +63,13 @@ def get_all_categories() -> list[CategoryResponse]:
 
 
 @router.put(path="/{uid}", response_model=CategoryResponse)
-def update_category(uid: str, category_data: CategoryUpdate) -> CategoryResponse:
+def update_category(uid: str, category_data: CategorySchema) -> CategoryResponse:
     """Update category"""
-    existing_category: Category | None = category_repo.get_by_id(uid=uid)
+    existing_category: Optional[Category] = category_repo.get_by_id(uid=uid)
     if not existing_category:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
     
-    user: User | None = user_repo.get_by_id(uid=category_data.user_uid)
+    user: Optional[User] = user_repo.get_by_id(uid=category_data.user_uid)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     

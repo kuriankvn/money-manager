@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from enum import StrEnum
-from core.models.user import User
-from core.models.category import Category
+from core.models import User, Category
 
 
 class Interval(StrEnum):
@@ -20,8 +19,4 @@ class Subscription:
     multiplier: int
     user: User
     category: Category
-    active: bool = True
-    
-    def __str__(self) -> str:
-        return f"{self.name} - {self.amount} - {self.interval} - {self.multiplier} - {self.user} - {self.category} - {self.active}"
-
+    active: bool

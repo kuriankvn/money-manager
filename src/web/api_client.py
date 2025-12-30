@@ -113,7 +113,7 @@ def get_transactions() -> tuple[bool, Any]:
 def create_transaction(
     name: str,
     amount: float,
-    datetime: float,
+    date: float,
     type: str,
     user_uid: str,
     category_uid: str
@@ -125,7 +125,7 @@ def create_transaction(
             json={
                 "name": name,
                 "amount": amount,
-                "datetime": datetime,
+                "date": date,
                 "type": type,
                 "user_uid": user_uid,
                 "category_uid": category_uid
@@ -140,7 +140,7 @@ def update_transaction(
     uid: str,
     name: str,
     amount: float,
-    datetime: float,
+    date: float,
     type: str,
     user_uid: str,
     category_uid: str
@@ -152,7 +152,7 @@ def update_transaction(
             json={
                 "name": name,
                 "amount": amount,
-                "datetime": datetime,
+                "date": date,
                 "type": type,
                 "user_uid": user_uid,
                 "category_uid": category_uid

@@ -39,7 +39,7 @@ class TestTransaction(unittest.TestCase):
             uid='txn-1',
             name='Grocery Shopping',
             amount=50.75,
-            datetime=1700000000.0,
+            date=1700000000.0,
             type=TransactionType.EXPENSE,
             user=self.user,
             category=self.category
@@ -51,7 +51,7 @@ class TestTransaction(unittest.TestCase):
         response = self.client.post("/transactions/", json={
             "name": "Grocery Shopping",
             "amount": 50.75,
-            "datetime": 1700000000.0,
+            "date": 1700000000.0,
             "type": "expense",
             "user_uid": self.user.uid,
             "category_uid": self.category.uid
@@ -66,7 +66,7 @@ class TestTransaction(unittest.TestCase):
             uid='txn-2',
             name='Coffee',
             amount=5.50,
-            datetime=1700000000.0,
+            date=1700000000.0,
             type=TransactionType.EXPENSE,
             user=self.user,
             category=self.category
@@ -81,7 +81,7 @@ class TestTransaction(unittest.TestCase):
         create_response = self.client.post("/transactions/", json={
             "name": "Coffee",
             "amount": 5.50,
-            "datetime": 1700000000.0,
+            "date": 1700000000.0,
             "type": "expense",
             "user_uid": self.user.uid,
             "category_uid": self.category.uid
@@ -94,8 +94,8 @@ class TestTransaction(unittest.TestCase):
         self.assertEqual(data["amount"], 5.50)
     
     def test_get_all_transactions_repository(self) -> None:
-        txn1 = Transaction(uid='txn-3', name='Item 1', amount=10.0, datetime=1700000000.0, type=TransactionType.EXPENSE, user=self.user, category=self.category)
-        txn2 = Transaction(uid='txn-4', name='Item 2', amount=20.0, datetime=1700000000.0, type=TransactionType.INCOME, user=self.user, category=self.category)
+        txn1 = Transaction(uid='txn-3', name='Item 1', amount=10.0, date=1700000000.0, type=TransactionType.EXPENSE, user=self.user, category=self.category)
+        txn2 = Transaction(uid='txn-4', name='Item 2', amount=20.0, date=1700000000.0, type=TransactionType.INCOME, user=self.user, category=self.category)
         self.repo.create(txn1)
         self.repo.create(txn2)
         transactions = self.repo.get_all()
@@ -103,11 +103,11 @@ class TestTransaction(unittest.TestCase):
     
     def test_get_all_transactions_api(self) -> None:
         self.client.post("/transactions/", json={
-            "name": "Item 1", "amount": 10.0, "datetime": 1700000000.0,
+            "name": "Item 1", "amount": 10.0, "date": 1700000000.0,
             "type": "expense", "user_uid": self.user.uid, "category_uid": self.category.uid
         })
         self.client.post("/transactions/", json={
-            "name": "Item 2", "amount": 20.0, "datetime": 1700000000.0,
+            "name": "Item 2", "amount": 20.0, "date": 1700000000.0,
             "type": "income", "user_uid": self.user.uid, "category_uid": self.category.uid
         })
         response = self.client.get("/transactions/")
@@ -120,7 +120,7 @@ class TestTransaction(unittest.TestCase):
             uid='txn-5',
             name='Original',
             amount=100.0,
-            datetime=1700000000.0,
+            date=1700000000.0,
             type=TransactionType.EXPENSE,
             user=self.user,
             category=self.category
@@ -136,12 +136,12 @@ class TestTransaction(unittest.TestCase):
     
     def test_update_transaction_api(self) -> None:
         create_response = self.client.post("/transactions/", json={
-            "name": "Original", "amount": 100.0, "datetime": 1700000000.0,
+            "name": "Original", "amount": 100.0, "date": 1700000000.0,
             "type": "expense", "user_uid": self.user.uid, "category_uid": self.category.uid
         })
         uid = create_response.json()["uid"]
         response = self.client.put(f"/transactions/{uid}", json={
-            "name": "Updated", "amount": 150.0, "datetime": 1700000000.0,
+            "name": "Updated", "amount": 150.0, "date": 1700000000.0,
             "type": "expense", "user_uid": self.user.uid, "category_uid": self.category.uid
         })
         self.assertEqual(response.status_code, 200)
@@ -154,7 +154,7 @@ class TestTransaction(unittest.TestCase):
             uid='txn-6',
             name='Delete Me',
             amount=99.99,
-            datetime=1700000000.0,
+            date=1700000000.0,
             type=TransactionType.EXPENSE,
             user=self.user,
             category=self.category
@@ -167,7 +167,7 @@ class TestTransaction(unittest.TestCase):
     
     def test_delete_transaction_api(self) -> None:
         create_response = self.client.post("/transactions/", json={
-            "name": "Delete Me", "amount": 99.99, "datetime": 1700000000.0,
+            "name": "Delete Me", "amount": 99.99, "date": 1700000000.0,
             "type": "expense", "user_uid": self.user.uid, "category_uid": self.category.uid
         })
         uid = create_response.json()["uid"]
@@ -181,9 +181,9 @@ class TestTransaction(unittest.TestCase):
         """Test CSV export with 3 dummy transactions"""
         # Create 3 transactions
         transactions_data = [
-            {"name": "Salary", "amount": 50000, "datetime": 1704067200.0, "type": "income"},
-            {"name": "Groceries", "amount": 2500, "datetime": 1704153600.0, "type": "expense"},
-            {"name": "Restaurant", "amount": 1200, "datetime": 1704240000.0, "type": "expense"}
+            {"name": "Salary", "amount": 50000, "date": 1704067200.0, "type": "income"},
+            {"name": "Groceries", "amount": 2500, "date": 1704153600.0, "type": "expense"},
+            {"name": "Restaurant", "amount": 1200, "date": 1704240000.0, "type": "expense"}
         ]
         
         for txn_data in transactions_data:

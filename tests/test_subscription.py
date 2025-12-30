@@ -71,7 +71,8 @@ class TestSubscription(unittest.TestCase):
             interval=Interval.MONTHLY,
             multiplier=1,
             user=self.user,
-            category=self.category
+            category=self.category,
+            active=True
         )
         self.repo.create(subscription)
         retrieved = self.repo.get_by_id('sub-2')
@@ -98,9 +99,9 @@ class TestSubscription(unittest.TestCase):
     
     def test_get_all_subscriptions_repository(self) -> None:
         sub1 = Subscription(uid='sub-3', name='Service 1', amount=10.0, interval=Interval.MONTHLY,
-                           multiplier=1, user=self.user, category=self.category)
+                           multiplier=1, user=self.user, category=self.category, active=True)
         sub2 = Subscription(uid='sub-4', name='Service 2', amount=20.0, interval=Interval.YEARLY,
-                           multiplier=1, user=self.user, category=self.category)
+                           multiplier=1, user=self.user, category=self.category, active=True)
         self.repo.create(sub1)
         self.repo.create(sub2)
         subscriptions = self.repo.get_all()
@@ -128,7 +129,8 @@ class TestSubscription(unittest.TestCase):
             interval=Interval.MONTHLY,
             multiplier=1,
             user=self.user,
-            category=self.category
+            category=self.category,
+            active=True
         )
         self.repo.create(subscription)
         subscription.name = 'Updated'
@@ -162,7 +164,8 @@ class TestSubscription(unittest.TestCase):
             interval=Interval.MONTHLY,
             multiplier=1,
             user=self.user,
-            category=self.category
+            category=self.category,
+            active=True
         )
         self.repo.create(subscription)
         result = self.repo.delete('sub-6')

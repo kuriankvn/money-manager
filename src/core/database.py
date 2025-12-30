@@ -94,7 +94,7 @@ def init_subscription_tables() -> None:
             multiplier INTEGER NOT NULL,
             user_uid TEXT NOT NULL,
             category_uid TEXT NOT NULL,
-            active INTEGER NOT NULL DEFAULT 1,
+            active BOOLEAN NOT NULL,
             FOREIGN KEY (user_uid) REFERENCES users(uid),
             FOREIGN KEY (category_uid) REFERENCES categories(uid),
             UNIQUE(name, user_uid))
