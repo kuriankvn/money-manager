@@ -85,9 +85,9 @@ class SubscriptionService:
                 continue
 
             interval: Optional[str] = CSVValidator.validate_enum(
-                value=row.get(key='interval'), allowed=['daily', 'weekly', 'monthly', 'yearly'])
+                value=row.get(key='interval'), allowed=['monthly', 'yearly'])
             if interval is None:
-                errors.append(f"Row {row_num}: Interval must be daily, weekly, monthly or yearly")
+                errors.append(f"Row {row_num}: Interval must be monthly or yearly")
                 continue
 
             multiplier: Optional[int] = 1

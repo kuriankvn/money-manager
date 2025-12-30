@@ -297,3 +297,75 @@ def import_transactions_csv(csv_content: str) -> tuple[bool, Any]:
         return handle_response(response)
     except Exception as e:
         return False, f"Connection error: {str(e)}"
+
+
+# Subscription Payments API
+def generate_payments(month: int, year: int, user_uid: str | None = None) -> tuple[bool, Any]:
+    """Generate payment notifications for a given month"""
+    try:
+        payload: dict[str, Any] = {"month": month, "year": year}
+        if user_uid:
+            payload["user_uid"] = user_uid
+        response = requests.post(f"{BASE_URL}/payments/generate", json=payload)
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def get_payments(month: int | None = None, year: int | None = None, user_uid: str | None = None) -> tuple[bool, Any]:
+    """Get subscription payments, optionally filtered by month/year and user"""
+    try:
+        params: dict[str, Any] = {}
+        if month:
+            params["month"] = month
+        if year:
+            params["year"] = year
+        if user_uid:
+            params["user_uid"] = user_uid
+        response = requests.get(f"{BASE_URL}/payments", params=params)
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def get_payment(uid: str) -> tuple[bool, Any]:
+    """Get a single subscription payment by ID"""
+    try:
+        response = requests.get(f"{BASE_URL}/payments/{uid}")
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def mark_payment_as_paid(uid: str, paid_date: str | None = None) -> tuple[bool, Any]:
+    """Mark a payment as paid"""
+    try:
+        payload: dict[str, Any] = {}
+        if paid_date:
+            payload["paid_date"] = paid_date
+        response = requests.put(f"{BASE_URL}/payments/{uid}/mark-paid", json=payload)
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def get_payment_statistics(month: int, year: int, user_uid: str | None = None) -> tuple[bool, Any]:
+    """Get payment statistics for a given month"""
+    try:
+        params: dict[str, Any] = {}
+        if user_uid:
+            params["user_uid"] = user_uid
+        response = requests.get(f"{BASE_URL}/payments/statistics/{month}/{year}", params=params)
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def delete_payment(uid: str) -> tuple[bool, Any]:
+    """Delete a subscription payment"""
+    try:
+        response = requests.delete(f"{BASE_URL}/payments/{uid}")
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+        return False, f"Connection error: {str(e)}"

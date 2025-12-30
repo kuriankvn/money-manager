@@ -5,7 +5,7 @@ from typing import Literal
 class SubscriptionSchema(BaseModel):
     name: str = Field(default=..., min_length=1, max_length=100)
     amount: float = Field(default=..., gt=0)
-    interval: Literal["daily", "weekly", "monthly", "yearly"]
+    interval: Literal["monthly", "yearly"]
     multiplier: int = Field(default=..., gt=0)
     user_uid: str
     category_uid: str

@@ -3,6 +3,7 @@ from .user import UserRepository
 from .category import CategoryRepository
 from .transaction import TransactionRepository
 from .subscription import SubscriptionRepository
+from .payment import PaymentRepository
 
 __all__ = [
     'IRepository',
@@ -10,4 +11,5 @@ __all__ = [
     'CategoryRepository',
     'TransactionRepository',
     'SubscriptionRepository',
+    'PaymentRepository',
 ]

@@ -223,7 +223,7 @@ class TestSubscription(unittest.TestCase):
         """Test CSV import with valid data"""
         csv_content = """name,amount,interval,multiplier,user,category,active
 New Sub 1,500,monthly,1,Test User,Entertainment,true
-New Sub 2,200,weekly,2,Test User,Entertainment,true
+New Sub 2,200,monthly,2,Test User,Entertainment,true
 New Sub 3,1000,yearly,1,Test User,Entertainment,false"""
         
         response = self.client.post(

@@ -4,8 +4,6 @@ from core.models import User, Category
 
 
 class Interval(StrEnum):
-    DAILY = "daily"
-    WEEKLY = "weekly"
     MONTHLY = "monthly"
     YEARLY = "yearly"
 

@@ -138,7 +138,7 @@ with tab2:
             
             col1, col2 = st.columns(2)
             with col1:
-                interval = st.selectbox("Interval *", options=["daily", "weekly", "monthly", "yearly"])
+                interval = st.selectbox("Interval *", options=["monthly", "yearly"])
             with col2:
                 multiplier = st.number_input("Multiplier *", min_value=1, value=1, step=1)
             
@@ -196,7 +196,7 @@ with tab3:
             
             col1, col2 = st.columns(2)
             with col1:
-                interval = st.selectbox("Interval *", options=["daily", "weekly", "monthly", "yearly"])
+                interval = st.selectbox("Interval *", options=["monthly", "yearly"])
             with col2:
                 multiplier = st.number_input("Multiplier *", min_value=1, value=1, step=1)
             
@@ -314,7 +314,7 @@ with tab5:
             **Required columns:**
             - `name`: Subscription name
             - `amount`: Amount (positive number)
-            - `interval`: daily, weekly, monthly, or yearly
+            - `interval`: monthly or yearly
             - `multiplier`: Integer >= 1 (optional, defaults to 1)
             - `user`: User name (must exist)
             - `category`: Category name (must exist)
@@ -324,7 +324,7 @@ with tab5:
             ```
             name,amount,interval,multiplier,user,category,active
             Netflix,999,monthly,1,John Doe,Entertainment,true
-            Spotify,119,monthly,1,John Doe,Music,true
+            Amazon Prime,1499,yearly,1,John Doe,Entertainment,true
             ```
             """)
 
