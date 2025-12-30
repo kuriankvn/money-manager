@@ -20,38 +20,38 @@ def handle_response(response: requests.Response) -> tuple[bool, Any]:
         return False, f"Request failed: {str(e)}"
 
 
-# Users API
-def get_users() -> tuple[bool, Any]:
-    """Get all users"""
+# Accounts API
+def get_accounts() -> tuple[bool, Any]:
+    """Get all accounts"""
     try:
-        response = requests.get(f"{BASE_URL}/users")
+        response = requests.get(f"{BASE_URL}/accounts")
         return handle_response(response)
     except Exception as e:
         return False, f"Connection error: {str(e)}"
 
 
-def create_user(name: str) -> tuple[bool, Any]:
-    """Create a new user"""
+def create_account(name: str) -> tuple[bool, Any]:
+    """Create a new account"""
     try:
-        response = requests.post(f"{BASE_URL}/users", json={"name": name})
+        response = requests.post(f"{BASE_URL}/accounts", json={"name": name})
         return handle_response(response)
     except Exception as e:
         return False, f"Connection error: {str(e)}"
 
 
-def update_user(uid: str, name: str) -> tuple[bool, Any]:
-    """Update a user"""
+def update_account(uid: str, name: str) -> tuple[bool, Any]:
+    """Update an account"""
     try:
-        response = requests.put(f"{BASE_URL}/users/{uid}", json={"name": name})
+        response = requests.put(f"{BASE_URL}/accounts/{uid}", json={"name": name})
         return handle_response(response)
     except Exception as e:
         return False, f"Connection error: {str(e)}"
 
 
-def delete_user(uid: str) -> tuple[bool, Any]:
-    """Delete a user"""
+def delete_account(uid: str) -> tuple[bool, Any]:
+    """Delete an account"""
     try:
-        response = requests.delete(f"{BASE_URL}/users/{uid}")
+        response = requests.delete(f"{BASE_URL}/accounts/{uid}")
         return handle_response(response)
     except Exception as e:
         return False, f"Connection error: {str(e)}"
@@ -67,24 +67,24 @@ def get_categories() -> tuple[bool, Any]:
         return False, f"Connection error: {str(e)}"
 
 
-def create_category(name: str, user_uid: str) -> tuple[bool, Any]:
+def create_category(name: str) -> tuple[bool, Any]:
     """Create a new category"""
     try:
         response = requests.post(
             f"{BASE_URL}/categories",
-            json={"name": name, "user_uid": user_uid}
+            json={"name": name}
         )
         return handle_response(response)
     except Exception as e:
         return False, f"Connection error: {str(e)}"
 
 
-def update_category(uid: str, name: str, user_uid: str) -> tuple[bool, Any]:
+def update_category(uid: str, name: str) -> tuple[bool, Any]:
     """Update a category"""
     try:
         response = requests.put(
             f"{BASE_URL}/categories/{uid}",
-            json={"name": name, "user_uid": user_uid}
+            json={"name": name}
         )
         return handle_response(response)
     except Exception as e:
@@ -113,9 +113,8 @@ def get_transactions() -> tuple[bool, Any]:
 def create_transaction(
     name: str,
     amount: float,
-    date: float,
-    type: str,
-    user_uid: str,
+    date: str,
+    account_uid: str,
     category_uid: str
 ) -> tuple[bool, Any]:
     """Create a new transaction"""
@@ -126,9 +125,8 @@ def create_transaction(
                 "name": name,
                 "amount": amount,
                 "date": date,
-                "type": type,
-                "user_uid": user_uid,
-                "category_uid": category_uid
+                "account_id": account_uid,
+                "category_id": category_uid
             }
         )
         return handle_response(response)
@@ -140,9 +138,8 @@ def update_transaction(
     uid: str,
     name: str,
     amount: float,
-    date: float,
-    type: str,
-    user_uid: str,
+    date: str,
+    account_uid: str,
     category_uid: str
 ) -> tuple[bool, Any]:
     """Update a transaction"""
@@ -153,9 +150,8 @@ def update_transaction(
                 "name": name,
                 "amount": amount,
                 "date": date,
-                "type": type,
-                "user_uid": user_uid,
-                "category_uid": category_uid
+                "account_id": account_uid,
+                "category_id": category_uid
             }
         )
         return handle_response(response)
@@ -185,11 +181,9 @@ def get_subscriptions() -> tuple[bool, Any]:
 def create_subscription(
     name: str,
     amount: float,
-    interval: str,
-    multiplier: int,
-    user_uid: str,
-    category_uid: str,
-    active: bool
+    frequency: str,
+    interval: int,
+    status: str
 ) -> tuple[bool, Any]:
     """Create a new subscription"""
     try:
@@ -198,11 +192,9 @@ def create_subscription(
             json={
                 "name": name,
                 "amount": amount,
+                "frequency": frequency,
                 "interval": interval,
-                "multiplier": multiplier,
-                "user_uid": user_uid,
-                "category_uid": category_uid,
-                "active": active
+                "status": status
             }
         )
         return handle_response(response)
@@ -214,11 +206,9 @@ def update_subscription(
     uid: str,
     name: str,
     amount: float,
-    interval: str,
-    multiplier: int,
-    user_uid: str,
-    category_uid: str,
-    active: bool
+    frequency: str,
+    interval: int,
+    status: str
 ) -> tuple[bool, Any]:
     """Update a subscription"""
     try:
@@ -227,11 +217,9 @@ def update_subscription(
             json={
                 "name": name,
                 "amount": amount,
+                "frequency": frequency,
                 "interval": interval,
-                "multiplier": multiplier,
-                "user_uid": user_uid,
-                "category_uid": category_uid,
-                "active": active
+                "status": status
             }
         )
         return handle_response(response)
@@ -247,6 +235,309 @@ def delete_subscription(uid: str) -> tuple[bool, Any]:
     except Exception as e:
         return False, f"Connection error: {str(e)}"
 
+
+
+# Subscription Instances API
+def get_subscription_instances() -> tuple[bool, Any]:
+    """Get all subscription instances"""
+    try:
+        response = requests.get(f"{BASE_URL}/subscription-instances")
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def create_subscription_instance(
+    subscription_uid: str,
+    amount: float,
+    due_date: str,
+    transaction_uid: str | None = None,
+    status: str = "due"
+) -> tuple[bool, Any]:
+    """Create a new subscription instance"""
+    try:
+        payload = {
+            "subscription_uid": subscription_uid,
+            "amount": amount,
+            "due_date": due_date,
+            "status": status
+        }
+        if transaction_uid:
+            payload["transaction_uid"] = transaction_uid
+        response = requests.post(f"{BASE_URL}/subscription-instances", json=payload)
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def update_subscription_instance(
+    uid: str,
+    subscription_uid: str,
+    amount: float,
+    due_date: str,
+    transaction_uid: str | None = None,
+    status: str = "due"
+) -> tuple[bool, Any]:
+    """Update a subscription instance"""
+    try:
+        payload = {
+            "subscription_uid": subscription_uid,
+            "amount": amount,
+            "due_date": due_date,
+            "status": status
+        }
+        if transaction_uid:
+            payload["transaction_uid"] = transaction_uid
+        response = requests.put(f"{BASE_URL}/subscription-instances/{uid}", json=payload)
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def delete_subscription_instance(uid: str) -> tuple[bool, Any]:
+    """Delete a subscription instance"""
+    try:
+        response = requests.delete(f"{BASE_URL}/subscription-instances/{uid}")
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+# Investments API
+def get_investments() -> tuple[bool, Any]:
+    """Get all investments"""
+    try:
+        response = requests.get(f"{BASE_URL}/investments")
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def create_investment(name: str, start_date: str, status: str = "active") -> tuple[bool, Any]:
+    """Create a new investment"""
+    try:
+        response = requests.post(
+            f"{BASE_URL}/investments",
+            json={"name": name, "start_date": start_date, "status": status}
+        )
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def update_investment(uid: str, name: str, start_date: str, status: str) -> tuple[bool, Any]:
+    """Update an investment"""
+    try:
+        response = requests.put(
+            f"{BASE_URL}/investments/{uid}",
+            json={"name": name, "start_date": start_date, "status": status}
+        )
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def delete_investment(uid: str) -> tuple[bool, Any]:
+    """Delete an investment"""
+    try:
+        response = requests.delete(f"{BASE_URL}/investments/{uid}")
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+# Investment Value Snapshots API
+def get_investment_snapshots() -> tuple[bool, Any]:
+    """Get all investment snapshots"""
+    try:
+        response = requests.get(f"{BASE_URL}/investment-snapshots")
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def create_investment_snapshot(
+    investment_uid: str,
+    date: str,
+    current_value: float
+) -> tuple[bool, Any]:
+    """Create a new investment snapshot"""
+    try:
+        response = requests.post(
+            f"{BASE_URL}/investment-snapshots",
+            json={
+                "investment_uid": investment_uid,
+                "date": date,
+                "current_value": current_value
+            }
+        )
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def update_investment_snapshot(
+    uid: str,
+    investment_uid: str,
+    date: str,
+    current_value: float
+) -> tuple[bool, Any]:
+    """Update an investment snapshot"""
+    try:
+        response = requests.put(
+            f"{BASE_URL}/investment-snapshots/{uid}",
+            json={
+                "investment_uid": investment_uid,
+                "date": date,
+                "current_value": current_value
+            }
+        )
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def delete_investment_snapshot(uid: str) -> tuple[bool, Any]:
+    """Delete an investment snapshot"""
+    try:
+        response = requests.delete(f"{BASE_URL}/investment-snapshots/{uid}")
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+# Investment Plans API
+def get_investment_plans() -> tuple[bool, Any]:
+    """Get all investment plans"""
+    try:
+        response = requests.get(f"{BASE_URL}/investment-plans")
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def create_investment_plan(
+    investment_uid: str,
+    amount: float,
+    frequency: str,
+    interval: int,
+    status: str = "active"
+) -> tuple[bool, Any]:
+    """Create a new investment plan"""
+    try:
+        response = requests.post(
+            f"{BASE_URL}/investment-plans",
+            json={
+                "investment_uid": investment_uid,
+                "amount": amount,
+                "frequency": frequency,
+                "interval": interval,
+                "status": status
+            }
+        )
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def update_investment_plan(
+    uid: str,
+    investment_uid: str,
+    amount: float,
+    frequency: str,
+    interval: int,
+    status: str
+) -> tuple[bool, Any]:
+    """Update an investment plan"""
+    try:
+        response = requests.put(
+            f"{BASE_URL}/investment-plans/{uid}",
+            json={
+                "investment_uid": investment_uid,
+                "amount": amount,
+                "frequency": frequency,
+                "interval": interval,
+                "status": status
+            }
+        )
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def delete_investment_plan(uid: str) -> tuple[bool, Any]:
+    """Delete an investment plan"""
+    try:
+        response = requests.delete(f"{BASE_URL}/investment-plans/{uid}")
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+# Investment Plan Instances API
+def get_investment_plan_instances() -> tuple[bool, Any]:
+    """Get all investment plan instances"""
+    try:
+        response = requests.get(f"{BASE_URL}/investment-plan-instances")
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def create_investment_plan_instance(
+    investment_plan_uid: str,
+    amount: float,
+    due_date: str,
+    transaction_uid: str | None = None,
+    status: str = "planned"
+) -> tuple[bool, Any]:
+    """Create a new investment plan instance"""
+    try:
+        payload = {
+            "investment_plan_uid": investment_plan_uid,
+            "amount": amount,
+            "due_date": due_date,
+            "status": status
+        }
+        if transaction_uid:
+            payload["transaction_uid"] = transaction_uid
+        response = requests.post(f"{BASE_URL}/investment-plan-instances", json=payload)
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def update_investment_plan_instance(
+    uid: str,
+    investment_plan_uid: str,
+    amount: float,
+    due_date: str,
+    transaction_uid: str | None = None,
+    status: str = "planned"
+) -> tuple[bool, Any]:
+    """Update an investment plan instance"""
+    try:
+        payload = {
+            "investment_plan_uid": investment_plan_uid,
+            "amount": amount,
+            "due_date": due_date,
+            "status": status
+        }
+        if transaction_uid:
+            payload["transaction_uid"] = transaction_uid
+        response = requests.put(f"{BASE_URL}/investment-plan-instances/{uid}", json=payload)
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
+
+
+def delete_investment_plan_instance(uid: str) -> tuple[bool, Any]:
+    """Delete an investment plan instance"""
+    try:
+        response = requests.delete(f"{BASE_URL}/investment-plan-instances/{uid}")
+        return handle_response(response)
+    except Exception as e:
+        return False, f"Connection error: {str(e)}"
 
 
 # CSV Export/Import for Subscriptions
@@ -266,7 +557,7 @@ def import_subscriptions_csv(csv_content: str) -> tuple[bool, Any]:
     """Import subscriptions from CSV"""
     try:
         response = requests.post(
-            f"{BASE_URL}/subscriptions/import/csv",
+            f"{BASE_URL}/subscriptions/export/csv",
             json={"file_content": csv_content}
         )
         return handle_response(response)
@@ -291,7 +582,7 @@ def import_transactions_csv(csv_content: str) -> tuple[bool, Any]:
     """Import transactions from CSV"""
     try:
         response = requests.post(
-            f"{BASE_URL}/transactions/import/csv",
+            f"{BASE_URL}/transactions/export/csv",
             json={"file_content": csv_content}
         )
         return handle_response(response)

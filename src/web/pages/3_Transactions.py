@@ -17,8 +17,8 @@ st.title("💳 Transactions Management")
 # Initialize session state
 if 'transactions_data' not in st.session_state:
     st.session_state.transactions_data = None
-if 'users_list' not in st.session_state:
-    st.session_state.users_list = []
+if 'accounts_list' not in st.session_state:
+    st.session_state.accounts_list = []
 if 'categories_list' not in st.session_state:
     st.session_state.categories_list = []
 
@@ -28,35 +28,31 @@ def load_transactions():
     success, data = api_client.get_transactions()
     if success and data:
         df = pd.DataFrame(data)
-        # Convert timestamp to date only format
-        if 'datetime' in df.columns:
-            df['datetime'] = df['datetime'].apply(
-                lambda x: datetime.fromtimestamp(x).strftime('%Y-%m-%d')
-            )
+        # Date is already in string format from API
         st.session_state.transactions_data = df
         return df
     elif success:
         st.session_state.transactions_data = pd.DataFrame(columns=[
-            "uid", "name", "amount", "datetime", "type",
-            "user_uid", "user_name", "category_uid", "category_name"
+            "uid", "name", "amount", "date",
+            "account_uid", "account_name", "category_uid", "category_name"
         ])
         return st.session_state.transactions_data
     else:
         st.error(f"Failed to fetch transactions: {data}")
         return pd.DataFrame(columns=[
-            "uid", "name", "amount", "datetime", "type",
-            "user_uid", "user_name", "category_uid", "category_name"
+            "uid", "name", "amount", "date",
+            "account_uid", "account_name", "category_uid", "category_name"
         ])
 
 
-def load_users():
-    """Load users for dropdown"""
-    success, data = api_client.get_users()
+def load_accounts():
+    """Load accounts for dropdown"""
+    success, data = api_client.get_accounts()
     if success and data:
-        st.session_state.users_list = [(user['name'], user['uid']) for user in data]
+        st.session_state.accounts_list = [(account['name'], account['uid']) for account in data]
     else:
-        st.session_state.users_list = []
-    return st.session_state.users_list
+        st.session_state.accounts_list = []
+    return st.session_state.accounts_list
 
 
 def load_categories():
@@ -79,7 +75,7 @@ with tab1:
     with col2:
         if st.button("🔄 Refresh", key="refresh_transactions"):
             load_transactions()
-            load_users()
+            load_accounts()
             load_categories()
             st.rerun()
     
@@ -87,66 +83,53 @@ with tab1:
     df = load_transactions()
     
     if not df.empty:
-        # Color code by type
-        def highlight_type(row):
-            if row['type'] == 'income':
-                return ['background-color: #90EE90; color: #000000'] * len(row)
-            elif row['type'] == 'expense':
-                return ['background-color: #FF6B6B; color: #000000'] * len(row)
-            return [''] * len(row)
-        
         # Hide UUID columns, show only names
-        display_columns = ["uid", "name", "amount", "datetime", "type", "user_name", "category_name"]
+        display_columns = ["uid", "name", "amount", "date", "account_name", "category_name"]
         display_df = df[display_columns] if all(col in df.columns for col in display_columns) else df
         
         st.dataframe(
-            display_df.style.apply(highlight_type, axis=1),
+            display_df,
             width='stretch',
             hide_index=True,
             column_config={
                 "uid": st.column_config.TextColumn("UID", width="small"),
                 "name": st.column_config.TextColumn("Name", width="medium"),
                 "amount": st.column_config.NumberColumn("Amount", format="₹%.2f"),
-                "datetime": st.column_config.TextColumn("Date", width="medium"),
-                "type": st.column_config.TextColumn("Type", width="small"),
-                "user_name": st.column_config.TextColumn("User", width="medium"),
+                "date": st.column_config.TextColumn("Date", width="medium"),
+                "account_name": st.column_config.TextColumn("Account", width="medium"),
                 "category_name": st.column_config.TextColumn("Category", width="medium"),
             }
         )
         
         # Summary statistics
-        col1, col2, col3 = st.columns(3)
+        col1, col2 = st.columns(2)
         with col1:
             st.metric("Total Transactions", len(df))
         with col2:
-            income = df[df['type'] == 'income']['amount'].sum() if 'income' in df['type'].values else 0
-            st.metric("Total Income", f"₹{income:.2f}")
-        with col3:
-            expense = df[df['type'] == 'expense']['amount'].sum() if 'expense' in df['type'].values else 0
-            st.metric("Total Expenses", f"₹{expense:.2f}")
+            total = df['amount'].sum() if 'amount' in df.columns else 0
+            st.metric("Total Amount", f"₹{total:.2f}")
     else:
         st.info("No transactions found. Create your first transaction!")
 
 with tab2:
     st.subheader("Create New Transaction")
     
-    # Load users and categories
-    users = load_users()
+    # Load accounts and categories
+    accounts = load_accounts()
     categories = load_categories()
     
-    if not users:
-        st.warning("⚠️ No users found. Please create a user first!")
+    if not accounts:
+        st.warning("⚠️ No accounts found. Please create an account first!")
     elif not categories:
         st.warning("⚠️ No categories found. Please create a category first!")
     else:
         with st.form("create_transaction_form", clear_on_submit=True):
             name = st.text_input("Transaction Name *", placeholder="Enter transaction name")
             amount = st.number_input("Amount *", min_value=0.01, value=0.01, step=0.01, format="%.2f")
-            transaction_type = st.radio("Type *", options=["income", "expense"], horizontal=True)
             transaction_date = st.date_input("Transaction Date *", value=datetime.now())
             
-            user_options = {f"{user[0]} ({user[1]})": user[1] for user in users}
-            selected_user = st.selectbox("User *", options=list(user_options.keys()))
+            account_options = {f"{account[0]} ({account[1]})": account[1] for account in accounts}
+            selected_account = st.selectbox("Account *", options=list(account_options.keys()))
             
             category_options = {f"{cat[0]} ({cat[1]})": cat[1] for cat in categories}
             selected_category = st.selectbox("Category *", options=list(category_options.keys()))
@@ -158,17 +141,17 @@ with tab2:
                     st.error("❌ Transaction name is required")
                 elif amount <= 0:
                     st.error("❌ Amount must be greater than 0")
-                elif not selected_user:
-                    st.error("❌ Please select a user")
+                elif not selected_account:
+                    st.error("❌ Please select an account")
                 elif not selected_category:
                     st.error("❌ Please select a category")
                 else:
-                    user_uid = user_options[selected_user]
+                    account_uid = account_options[selected_account]
                     category_uid = category_options[selected_category]
-                    timestamp = datetime.combine(transaction_date, time(0, 0, 1)).timestamp()
+                    date_str = transaction_date.strftime('%Y-%m-%d')
                     
                     success, data = api_client.create_transaction(
-                        name.strip(), amount, timestamp, transaction_type, user_uid, category_uid
+                        name.strip(), amount, date_str, account_uid, category_uid
                     )
                     if success:
                         st.success(f"✅ Transaction created: {data['name']}")
@@ -180,12 +163,12 @@ with tab2:
 with tab3:
     st.subheader("Update Transaction")
     
-    # Load users and categories
-    users = load_users()
+    # Load accounts and categories
+    accounts = load_accounts()
     categories = load_categories()
     
-    if not users:
-        st.warning("⚠️ No users found. Please create a user first!")
+    if not accounts:
+        st.warning("⚠️ No accounts found. Please create an account first!")
     elif not categories:
         st.warning("⚠️ No categories found. Please create a category first!")
     else:
@@ -193,11 +176,10 @@ with tab3:
             uid = st.text_input("Transaction UID *", placeholder="Enter UID to update")
             name = st.text_input("New Name *", placeholder="Enter new name")
             amount = st.number_input("Amount *", min_value=0.01, value=0.01, step=0.01, format="%.2f")
-            transaction_type = st.radio("Type *", options=["income", "expense"], horizontal=True)
             transaction_date = st.date_input("Transaction Date *", value=datetime.now())
             
-            user_options = {f"{user[0]} ({user[1]})": user[1] for user in users}
-            selected_user = st.selectbox("User *", options=list(user_options.keys()))
+            account_options = {f"{account[0]} ({account[1]})": account[1] for account in accounts}
+            selected_account = st.selectbox("Account *", options=list(account_options.keys()))
             
             category_options = {f"{cat[0]} ({cat[1]})": cat[1] for cat in categories}
             selected_category = st.selectbox("Category *", options=list(category_options.keys()))
@@ -211,17 +193,17 @@ with tab3:
                     st.error("❌ Name is required")
                 elif amount <= 0:
                     st.error("❌ Amount must be greater than 0")
-                elif not selected_user:
-                    st.error("❌ Please select a user")
+                elif not selected_account:
+                    st.error("❌ Please select an account")
                 elif not selected_category:
                     st.error("❌ Please select a category")
                 else:
-                    user_uid = user_options[selected_user]
+                    account_uid = account_options[selected_account]
                     category_uid = category_options[selected_category]
-                    timestamp = datetime.combine(transaction_date, time(0, 0, 1)).timestamp()
+                    date_str = transaction_date.strftime('%Y-%m-%d')
                     
                     success, data = api_client.update_transaction(
-                        uid.strip(), name.strip(), amount, timestamp, transaction_type, user_uid, category_uid
+                        uid.strip(), name.strip(), amount, date_str, account_uid, category_uid
                     )
                     if success:
                         st.success(f"✅ Transaction updated: {data['name']}")
@@ -307,16 +289,15 @@ with tab5:
             **Required columns:**
             - `name`: Transaction name
             - `amount`: Amount (positive number)
-            - `type`: income or expense
             - `date`: Date in DD/MM/YYYY format (mandatory)
-            - `user`: User name (must exist)
+            - `account`: Account name (must exist)
             - `category`: Category name (must exist)
             
             **Example:**
             ```
-            name,amount,type,date,user,category
-            Salary,50000,income,15/01/2024,John Doe,Income
-            Groceries,2500,expense,16/01/2024,John Doe,Food
+            name,amount,date,account,category
+            Salary,50000,15/01/2024,Checking Account,Income
+            Groceries,2500,16/01/2024,Credit Card,Food
             ```
             """)
 
@@ -325,14 +306,14 @@ with st.sidebar:
     st.markdown("### 💡 Tips")
     st.markdown("""
     **General:**
-    - Track all income and expenses for better financial insights
+    - Track all transactions for better financial insights
     - Use descriptive names for easy identification
-    - Assign appropriate categories for better organization
+    - Assign appropriate accounts and categories
     
     **CSV Import/Export:**
     - Use Export to backup your transactions
     - Import CSV to bulk add transactions
     - Date format must be DD/MM/YYYY
-    - Ensure user and category names exist before importing
-    - User and category names are case-sensitive
+    - Ensure account and category names exist before importing
+    - Account and category names are case-sensitive
     """)

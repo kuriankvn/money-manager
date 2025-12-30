@@ -21,10 +21,20 @@ for managing your personal finances.
 
 Use the sidebar to navigate between different sections:
 
-- **👤 Users**: Create and manage user accounts
+### 💳 Transactions
+- **🏦 Accounts**: Manage your financial accounts
 - **📁 Categories**: Organize transactions by category
-- **💳 Transactions**: Track income and expenses
-- **🔄 Subscriptions**: Manage recurring subscriptions
+- **💰 Transactions**: Track income and expenses
+
+### 🔄 Subscriptions
+- **📋 Subscriptions**: Manage recurring subscriptions
+- **📅 Subscription Instances**: Track individual subscription payments
+
+### 📈 Investments
+- **💼 Investments**: Manage your investment portfolios
+- **📊 Investment Snapshots**: Track investment values over time
+- **📝 Investment Plans**: Set up recurring investment plans
+- **🎯 Investment Plan Instances**: Track individual investment contributions
 
 ---
 
@@ -42,11 +52,12 @@ Use the sidebar to navigate between different sections:
 
 ### Usage Tips
 
-- 📝 Create users first before adding categories, transactions, or subscriptions
+- 📝 Create accounts and categories first
 - 🔑 Use the UID from tables to update or delete items
 - 🔄 Tables auto-refresh after operations
 - ⏰ All timestamps are automatically set to current time
 - 💾 Use forms to batch multiple inputs before submitting
+- 📥 Export/Import CSV for bulk operations
 
 ---
 
@@ -57,6 +68,7 @@ This Streamlit interface provides:
 - 📊 Clean, responsive data tables
 - 🎯 Form-based input validation
 - 🔔 Real-time success/error notifications
+- 📁 CSV Export/Import capabilities
 - 🎨 Modern, customizable theme
 
 ---

@@ -16,8 +16,6 @@ st.title("📁 Categories Management")
 # Initialize session state
 if 'categories_data' not in st.session_state:
     st.session_state.categories_data = None
-if 'users_list' not in st.session_state:
-    st.session_state.users_list = []
 
 
 def load_categories():
@@ -27,21 +25,11 @@ def load_categories():
         st.session_state.categories_data = pd.DataFrame(data)
         return st.session_state.categories_data
     elif success:
-        st.session_state.categories_data = pd.DataFrame(columns=["uid", "name", "user_uid", "user_name"])
+        st.session_state.categories_data = pd.DataFrame(columns=["uid", "name"])
         return st.session_state.categories_data
     else:
         st.error(f"Failed to fetch categories: {data}")
-        return pd.DataFrame(columns=["uid", "name", "user_uid", "user_name"])
-
-
-def load_users():
-    """Load users for dropdown"""
-    success, data = api_client.get_users()
-    if success and data:
-        st.session_state.users_list = [(user['name'], user['uid']) for user in data]
-    else:
-        st.session_state.users_list = []
-    return st.session_state.users_list
+        return pd.DataFrame(columns=["uid", "name"])
 
 
 # Create tabs for different operations
@@ -54,25 +42,19 @@ with tab1:
     with col2:
         if st.button("🔄 Refresh", key="refresh_categories"):
             load_categories()
-            load_users()
             st.rerun()
     
     # Load and display categories
     df = load_categories()
     
     if not df.empty:
-        # Hide UUID column, show only names
-        display_columns = ["uid", "name", "user_name"]
-        display_df = df[display_columns] if all(col in df.columns for col in display_columns) else df
-        
         st.dataframe(
-            display_df,
+            df,
             width='stretch',
             hide_index=True,
             column_config={
-                "uid": st.column_config.TextColumn("UID", width="small"),
-                "name": st.column_config.TextColumn("Name", width="medium"),
-                "user_name": st.column_config.TextColumn("User", width="medium"),
+                "uid": st.column_config.TextColumn("UID", width="medium"),
+                "name": st.column_config.TextColumn("Name", width="large"),
             }
         )
         st.info(f"Total categories: {len(df)}")
@@ -82,74 +64,50 @@ with tab1:
 with tab2:
     st.subheader("Create New Category")
     
-    # Load users for dropdown
-    users = load_users()
-    
-    if not users:
-        st.warning("⚠️ No users found. Please create a user first!")
-    else:
-        with st.form("create_category_form", clear_on_submit=True):
-            name = st.text_input("Category Name *", placeholder="Enter category name")
-            
-            user_options = {f"{user[0]} ({user[1]})": user[1] for user in users}
-            selected_user = st.selectbox("User *", options=list(user_options.keys()))
-            
-            submitted = st.form_submit_button("➕ Create Category", type="primary", width='stretch')
-            
-            if submitted:
-                if not name or not name.strip():
-                    st.error("❌ Category name is required")
-                elif not selected_user:
-                    st.error("❌ Please select a user")
+    with st.form("create_category_form", clear_on_submit=True):
+        name = st.text_input("Category Name *", placeholder="Enter category name")
+        
+        submitted = st.form_submit_button("➕ Create Category", type="primary", width='stretch')
+        
+        if submitted:
+            if not name or not name.strip():
+                st.error("❌ Category name is required")
+            else:
+                success, data = api_client.create_category(name.strip())
+                if success:
+                    st.success(f"✅ Category created: {data['name']}")
+                    load_categories()
+                    st.rerun()
                 else:
-                    user_uid = user_options[selected_user]
-                    success, data = api_client.create_category(name.strip(), user_uid)
-                    if success:
-                        st.success(f"✅ Category created: {data['name']}")
-                        load_categories()
-                        st.rerun()
-                    else:
-                        st.error(f"❌ Failed to create category: {data}")
+                    st.error(f"❌ Failed to create category: {data}")
 
 with tab3:
     st.subheader("Update Category")
     
-    # Load users for dropdown
-    users = load_users()
-    
-    if not users:
-        st.warning("⚠️ No users found. Please create a user first!")
-    else:
-        with st.form("update_category_form"):
-            uid = st.text_input("Category UID *", placeholder="Enter UID to update")
-            name = st.text_input("New Name *", placeholder="Enter new name")
-            
-            user_options = {f"{user[0]} ({user[1]})": user[1] for user in users}
-            selected_user = st.selectbox("User *", options=list(user_options.keys()))
-            
-            submitted = st.form_submit_button("✏️ Update Category", type="secondary", width='stretch')
-            
-            if submitted:
-                if not uid or not uid.strip():
-                    st.error("❌ Category UID is required")
-                elif not name or not name.strip():
-                    st.error("❌ Name is required")
-                elif not selected_user:
-                    st.error("❌ Please select a user")
+    with st.form("update_category_form"):
+        uid = st.text_input("Category UID *", placeholder="Enter UID to update")
+        name = st.text_input("New Name *", placeholder="Enter new name")
+        
+        submitted = st.form_submit_button("✏️ Update Category", type="secondary", width='stretch')
+        
+        if submitted:
+            if not uid or not uid.strip():
+                st.error("❌ Category UID is required")
+            elif not name or not name.strip():
+                st.error("❌ Name is required")
+            else:
+                success, data = api_client.update_category(uid.strip(), name.strip())
+                if success:
+                    st.success(f"✅ Category updated: {data['name']}")
+                    load_categories()
+                    st.rerun()
                 else:
-                    user_uid = user_options[selected_user]
-                    success, data = api_client.update_category(uid.strip(), name.strip(), user_uid)
-                    if success:
-                        st.success(f"✅ Category updated: {data['name']}")
-                        load_categories()
-                        st.rerun()
-                    else:
-                        st.error(f"❌ Failed to update category: {data}")
+                    st.error(f"❌ Failed to update category: {data}")
 
 with tab4:
     st.subheader("Delete Category")
     
-    st.warning("⚠️ Warning: Deleting a category will also delete all associated transactions and subscriptions!")
+    st.warning("⚠️ Warning: Deleting a category will also delete all associated transactions!")
     
     with st.form("delete_category_form"):
         uid = st.text_input("Category UID *", placeholder="Enter UID to delete")
@@ -176,8 +134,8 @@ with tab4:
 with st.sidebar:
     st.markdown("### 💡 Tips")
     st.markdown("""
-    - Categories help organize transactions and subscriptions
-    - Each category belongs to a specific user
-    - Use descriptive names like "Food", "Entertainment", "Utilities"
+    - Categories help organize transactions
+    - Use descriptive names like "Food", "Entertainment", "Utilities", "Salary"
     - Categories can be reused across multiple transactions
+    - Create both income and expense categories
     """)
