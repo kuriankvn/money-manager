@@ -6,6 +6,7 @@ from .investments import (
     investment_plans_router,
     investment_plan_instances_router
 )
+from .export_import import transactions_export_router, subscriptions_export_router
 
 __all__ = [
     "categories_router",
@@ -17,6 +18,8 @@ __all__ = [
     "investment_snapshots_router",
     "investment_plans_router",
     "investment_plan_instances_router",
+    "transactions_export_router",
+    "subscriptions_export_router",
 ]
 
 # Made with Bob

@@ -68,3 +68,14 @@ InvestmentPlanInstance
 - GET / - Get all investment plan instances
 - PUT /{uid} - Update investment plan instance
 - DELETE /{uid} - Delete investment plan instance
+
+
+## Export/Import Controllers
+
+Transaction Export/Import
+- GET /export/csv - Export all transactions to CSV
+- POST /export/csv - Import transactions from CSV
+
+Subscription Export/Import
+- GET /export/csv - Export all subscriptions to CSV
+- POST /export/csv - Import subscriptions from CSV

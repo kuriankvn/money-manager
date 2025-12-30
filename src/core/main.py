@@ -9,7 +9,9 @@ from core.controller import (
     investments_router,
     investment_snapshots_router,
     investment_plans_router,
-    investment_plan_instances_router
+    investment_plan_instances_router,
+    transactions_export_router,
+    subscriptions_export_router
 )
 from core.storage import init_database
 
@@ -28,6 +30,8 @@ app.include_router(router=investments_router)
 app.include_router(router=investment_snapshots_router)
 app.include_router(router=investment_plans_router)
 app.include_router(router=investment_plan_instances_router)
+app.include_router(router=transactions_export_router)
+app.include_router(router=subscriptions_export_router)
 
 
 @app.get(path="/")

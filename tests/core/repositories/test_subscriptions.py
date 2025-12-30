@@ -30,6 +30,8 @@ class TestSubscriptionRepository(unittest.TestCase):
             amount=15.99,
             frequency=Frequency.MONTHLY,
             interval=1,
+            due_day=15,
+            due_month=None,
             status=SubscriptionStatus.ACTIVE
         )
         uid = self.repo.create(subscription)
@@ -42,6 +44,8 @@ class TestSubscriptionRepository(unittest.TestCase):
             amount=9.99,
             frequency=Frequency.MONTHLY,
             interval=1,
+            due_day=1,
+            due_month=None,
             status=SubscriptionStatus.ACTIVE
         )
         self.repo.create(subscription)
@@ -49,11 +53,13 @@ class TestSubscriptionRepository(unittest.TestCase):
         self.assertIsNotNone(retrieved)
     
     def test_get_all(self) -> None:
-        sub1 = Subscription(uid='sub-3', name='Service 1', amount=10.0, 
-                           frequency=Frequency.MONTHLY, interval=1, 
+        sub1 = Subscription(uid='sub-3', name='Service 1', amount=10.0,
+                           frequency=Frequency.MONTHLY, interval=1,
+                           due_day=1, due_month=None,
                            status=SubscriptionStatus.ACTIVE)
-        sub2 = Subscription(uid='sub-4', name='Service 2', amount=20.0, 
-                           frequency=Frequency.YEARLY, interval=1, 
+        sub2 = Subscription(uid='sub-4', name='Service 2', amount=20.0,
+                           frequency=Frequency.YEARLY, interval=1,
+                           due_day=15, due_month=6,
                            status=SubscriptionStatus.ACTIVE)
         self.repo.create(sub1)
         self.repo.create(sub2)
@@ -67,6 +73,8 @@ class TestSubscriptionRepository(unittest.TestCase):
             amount=100.0,
             frequency=Frequency.MONTHLY,
             interval=1,
+            due_day=1,
+            due_month=None,
             status=SubscriptionStatus.ACTIVE
         )
         self.repo.create(subscription)
@@ -81,6 +89,8 @@ class TestSubscriptionRepository(unittest.TestCase):
             amount=99.99,
             frequency=Frequency.MONTHLY,
             interval=1,
+            due_day=1,
+            due_month=None,
             status=SubscriptionStatus.ACTIVE
         )
         self.repo.create(subscription)
@@ -105,6 +115,8 @@ class TestSubscriptionInstanceRepository(unittest.TestCase):
             amount=15.99,
             frequency=Frequency.MONTHLY,
             interval=1,
+            due_day=15,
+            due_month=None,
             status=SubscriptionStatus.ACTIVE
         )
         self.sub_repo.create(self.subscription)
