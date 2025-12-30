@@ -24,7 +24,7 @@ Use the sidebar to navigate between different sections:
 - **👤 Users**: Create and manage user accounts
 - **📁 Categories**: Organize transactions by category
 - **💳 Transactions**: Track income and expenses
-- **🔄 Subscriptions**: Manage recurring payments
+- **🔄 Subscriptions**: Manage recurring subscriptions
 
 ---
 

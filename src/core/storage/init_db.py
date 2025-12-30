@@ -104,32 +104,9 @@ def init_subscription_tables() -> None:
     conn.close()
 
 
-def init_subscription_payment_tables() -> None:
-    """Initialize subscription payment tables (requires user and subscription tables)"""
-    conn: sqlite3.Connection = get_connection()
-    cursor: sqlite3.Cursor = conn.cursor()
-    
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS subscription_payments (
-            uid TEXT PRIMARY KEY,
-            amount REAL NOT NULL,
-            due_date REAL NOT NULL,
-            user_uid TEXT NOT NULL,
-            subscription_uid TEXT NOT NULL,
-            paid_date REAL,
-            paid BOOLEAN NOT NULL DEFAULT 0,
-            FOREIGN KEY (user_uid) REFERENCES users(uid),
-            FOREIGN KEY (subscription_uid) REFERENCES subscriptions(uid))
-    """)
-    
-    conn.commit()
-    conn.close()
-
-
 def init_database() -> None:
-    """Initialize all database tables for money_manager and subscription_manager"""
+    """Initialize all database tables for money_manager"""
     init_user_tables()
     init_category_tables()
     init_transaction_tables()
     init_subscription_tables()
-    init_subscription_payment_tables()

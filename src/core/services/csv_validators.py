@@ -2,8 +2,7 @@ from datetime import datetime
 import pandas as pd
 from typing import Any, Optional
 
-from core.models.user import User
-from core.models.category import Category
+from core.domain import User, Category
 from core.repositories.category import CategoryRepository
 from core.repositories.user import UserRepository
 

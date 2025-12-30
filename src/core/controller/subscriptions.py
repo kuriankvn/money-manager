@@ -2,8 +2,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, status, Body
 from fastapi.responses import Response
 from core.repositories import SubscriptionRepository, UserRepository, CategoryRepository
-from core.models import Subscription, Interval, User, Category
-from core.schemas import SubscriptionSchema, SubscriptionResponse
+from core.domain import Subscription, Interval, User, Category, SubscriptionSchema, SubscriptionResponse
 from core.utils import generate_uid
 from core.exceptions import DuplicateEntityError
 from core.services import SubscriptionService

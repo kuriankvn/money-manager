@@ -1,8 +1,8 @@
 import sqlite3
 from typing import Any, Optional
-from core.database import get_connection
+from core.storage.init_db import get_connection
 from core.repositories import IRepository, UserRepository
-from core.models import Category, User
+from core.domain import Category, User
 from core.exceptions import DuplicateEntityError
 
 

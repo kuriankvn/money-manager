@@ -3,7 +3,7 @@ import pandas as pd
 import io
 from datetime import datetime
 from typing import Any, Optional
-from core.models import Transaction, TransactionType, User, Category
+from core.domain import Transaction, TransactionType, User, Category
 from core.repositories import TransactionRepository, UserRepository, CategoryRepository
 from core.utils import generate_uid
 from core.services.csv_validators import CSVValidator

@@ -1,5 +1,5 @@
 """Money Manager Package - Main Package"""
-from core.database import init_database, get_connection
+from core.storage import init_database, get_connection
 from core.repositories import (
     IRepository,
     UserRepository,
@@ -7,7 +7,7 @@ from core.repositories import (
     TransactionRepository,
     SubscriptionRepository,
 )
-from core.models import (
+from core.domain import (
     User,
     Category,
     Transaction,

@@ -1,11 +1,10 @@
 from typing import Any
 from fastapi import FastAPI
-from core.apis.users import router as users_router
-from core.apis.categories import router as categories_router
-from core.apis.transactions import router as transactions_router
-from core.apis.subscriptions import router as subscriptions_router
-from core.apis.payments import router as payments_router
-from core.database import init_database
+from core.controller.users import router as users_router
+from core.controller.categories import router as categories_router
+from core.controller.transactions import router as transactions_router
+from core.controller.subscriptions import router as subscriptions_router
+from core.storage import init_database
 
 app: FastAPI = FastAPI(
     title="Money Manager API",
@@ -17,7 +16,6 @@ app.include_router(router=users_router)
 app.include_router(router=categories_router)
 app.include_router(router=transactions_router)
 app.include_router(router=subscriptions_router)
-app.include_router(router=payments_router)
 
 
 @app.get(path="/")
@@ -31,7 +29,6 @@ def root() -> dict[str, Any]:
             "categories": "/categories",
             "transactions": "/transactions",
             "subscriptions": "/subscriptions",
-            "payments": "/payments",
             "docs": "/docs"
         }
     }

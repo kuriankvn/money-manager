@@ -1,7 +1,7 @@
 import pandas as pd
 import io
 from typing import Any, Optional
-from core.models import Subscription, Interval, User, Category
+from core.domain import Subscription, Interval, User, Category
 from core.repositories import SubscriptionRepository, UserRepository, CategoryRepository
 from core.utils import generate_uid
 from core.services.csv_validators import CSVValidator

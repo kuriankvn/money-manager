@@ -1,8 +1,7 @@
 from typing import Optional
 from fastapi import APIRouter, HTTPException, status
 from core.repositories import CategoryRepository, UserRepository
-from core.models import Category, User
-from core.schemas import CategorySchema, CategoryResponse
+from core.domain import Category, User, CategorySchema, CategoryResponse
 from core.utils import generate_uid
 from core.exceptions import DuplicateEntityError
 

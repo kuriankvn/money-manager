@@ -2,8 +2,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, status, Body
 from fastapi.responses import Response
 from core.repositories import TransactionRepository, UserRepository, CategoryRepository
-from core.models import Transaction, TransactionType, User, Category
-from core.schemas import TransactionSchema, TransactionResponse
+from core.domain import Transaction, TransactionType, User, Category, TransactionSchema, TransactionResponse
 from core.utils import generate_uid
 from core.services import TransactionService
 

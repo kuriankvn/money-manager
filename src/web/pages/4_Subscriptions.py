@@ -333,7 +333,7 @@ with st.sidebar:
     st.markdown("### 💡 Tips")
     st.markdown("""
     **General:**
-    - Manage recurring payments and subscriptions
+    - Manage recurring subscriptions
     - Set interval (daily, weekly, monthly, yearly) and multiplier
     - Toggle active status to pause without deleting
     - Track total monthly/yearly subscription costs
