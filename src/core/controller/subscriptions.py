@@ -1,166 +1,161 @@
-from typing import Any, Optional
-from fastapi import APIRouter, HTTPException, status, Body
-from fastapi.responses import Response
-from core.repositories import SubscriptionRepository, UserRepository, CategoryRepository
-from core.domain import Subscription, Interval, User, Category, SubscriptionSchema, SubscriptionResponse
-from core.utils import generate_uid
-from core.exceptions import DuplicateEntityError
-from core.services import SubscriptionService
-
-router: APIRouter = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
-subscription_repo: SubscriptionRepository = SubscriptionRepository()
-user_repo: UserRepository = UserRepository()
-category_repo: CategoryRepository = CategoryRepository()
-subscription_service: SubscriptionService = SubscriptionService()
+from typing import Optional
+from fastapi import APIRouter, status, HTTPException
+from core.repositories import SubscriptionRepository, SubscriptionInstanceRepository
+from core.domain import Subscription, SubscriptionInstance
+from core.domain import SubscriptionSchema, SubscriptionResponse, SubscriptionInstanceSchema, SubscriptionInstanceResponse
+from core.controller.base import BaseController
 
 
-@router.post(path="/", response_model=SubscriptionResponse, status_code=status.HTTP_201_CREATED)
+# Subscription Controller
+class SubscriptionController(BaseController[Subscription, SubscriptionSchema, SubscriptionResponse]):
+    """Subscription controller with CRUD operations"""
+    
+    def __init__(self) -> None:
+        self._repository = SubscriptionRepository()
+    
+    @property
+    def repository(self) -> SubscriptionRepository:
+        return self._repository
+    
+    @property
+    def entity_name(self) -> str:
+        return "Subscription"
+    
+    def model_to_entity(self, uid: str, model: SubscriptionSchema) -> Subscription:
+        return Subscription(
+            uid=uid,
+            name=model.name,
+            amount=model.amount,
+            frequency=model.frequency,
+            interval=model.interval,
+            due_day=model.due_day,
+            due_month=model.due_month,
+            status=model.status
+        )
+    
+    def entity_to_response(self, entity: Subscription) -> SubscriptionResponse:
+        return SubscriptionResponse(
+            uid=entity.uid,
+            name=entity.name,
+            amount=entity.amount,
+            frequency=entity.frequency,
+            interval=entity.interval,
+            due_day=entity.due_day,
+            due_month=entity.due_month,
+            status=entity.status
+        )
+
+
+# Subscription Instance Controller
+class SubscriptionInstanceController(BaseController[SubscriptionInstance, SubscriptionInstanceSchema, SubscriptionInstanceResponse]):
+    """Subscription instance controller with CRUD operations"""
+    
+    def __init__(self) -> None:
+        self._repository = SubscriptionInstanceRepository()
+        self.subscription_repo = SubscriptionRepository()
+    
+    @property
+    def repository(self) -> SubscriptionInstanceRepository:
+        return self._repository
+    
+    @property
+    def entity_name(self) -> str:
+        return "Subscription instance"
+    
+    def validate_dependencies(self, model: SubscriptionInstanceSchema) -> None:
+        """Validate subscription exists"""
+        subscription: Optional[Subscription] = self.subscription_repo.get_by_id(uid=model.subscription_id)
+        if not subscription:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subscription not found")
+    
+    def model_to_entity(self, uid: str, model: SubscriptionInstanceSchema) -> SubscriptionInstance:
+        return SubscriptionInstance(
+            uid=uid,
+            subscription_id=model.subscription_id,
+            amount=model.amount,
+            due_date=model.due_date,
+            transaction_id=model.transaction_id,
+            status=model.status
+        )
+    
+    def entity_to_response(self, entity: SubscriptionInstance) -> SubscriptionInstanceResponse:
+        return SubscriptionInstanceResponse(
+            uid=entity.uid,
+            subscription_id=entity.subscription_id,
+            amount=entity.amount,
+            due_date=entity.due_date,
+            transaction_id=entity.transaction_id,
+            status=entity.status
+        )
+
+
+# Initialize controllers and routers
+subscription_controller: SubscriptionController = SubscriptionController()
+subscriptions_router: APIRouter = APIRouter(prefix="/subscriptions", tags=["subscriptions"])
+
+subscription_instance_controller: SubscriptionInstanceController = SubscriptionInstanceController()
+subscription_instances_router: APIRouter = APIRouter(prefix="/subscription-instances", tags=["subscription-instances"])
+
+
+# Subscription Routes
+@subscriptions_router.post("/", response_model=SubscriptionResponse, status_code=status.HTTP_201_CREATED)
 def create_subscription(subscription_data: SubscriptionSchema) -> SubscriptionResponse:
     """Create a new subscription"""
-    user: Optional[User] = user_repo.get_by_id(uid=subscription_data.user_uid)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    
-    category: Optional[Category] = category_repo.get_by_id(uid=subscription_data.category_uid)
-    if not category:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
-    
-    uid: str = generate_uid()
-    subscription: Subscription = Subscription(
-        uid=uid,
-        name=subscription_data.name,
-        amount=subscription_data.amount,
-        interval=Interval(value=subscription_data.interval),
-        multiplier=subscription_data.multiplier,
-        user=user,
-        category=category,
-        active=subscription_data.active
-    )
-    try:
-        subscription_repo.create(entity=subscription)
-    except DuplicateEntityError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
-    
-    return SubscriptionResponse(
-        uid=subscription.uid,
-        name=subscription.name,
-        amount=subscription.amount,
-        interval=subscription.interval.value,
-        multiplier=subscription.multiplier,
-        user_uid=user.uid,
-        user_name=user.name,
-        category_uid=category.uid,
-        category_name=category.name,
-        active=subscription.active
-    )
+    return subscription_controller.create(data=subscription_data)
 
 
-@router.get(path="/{uid}", response_model=SubscriptionResponse)
+@subscriptions_router.get("/{uid}", response_model=SubscriptionResponse)
 def get_subscription(uid: str) -> SubscriptionResponse:
     """Get subscription by ID"""
-    subscription: Optional[Subscription] = subscription_repo.get_by_id(uid=uid)
-    if not subscription:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subscription not found")
-    return SubscriptionResponse(
-        uid=subscription.uid,
-        name=subscription.name,
-        amount=subscription.amount,
-        interval=subscription.interval.value,
-        multiplier=subscription.multiplier,
-        user_uid=subscription.user.uid,
-        user_name=subscription.user.name,
-        category_uid=subscription.category.uid,
-        category_name=subscription.category.name,
-        active=subscription.active
-    )
+    return subscription_controller.get_by_id(uid)
 
 
-@router.get(path="/", response_model=list[SubscriptionResponse])
+@subscriptions_router.get("/", response_model=list[SubscriptionResponse])
 def get_all_subscriptions() -> list[SubscriptionResponse]:
     """Get all subscriptions"""
-    subscriptions: list[Subscription] = subscription_repo.get_all()
-    return [
-        SubscriptionResponse(
-            uid=sub.uid,
-            name=sub.name,
-            amount=sub.amount,
-            interval=sub.interval.value,
-            multiplier=sub.multiplier,
-            user_uid=sub.user.uid,
-            user_name=sub.user.name,
-            category_uid=sub.category.uid,
-            category_name=sub.category.name,
-            active=sub.active
-        )
-        for sub in subscriptions
-    ]
+    return subscription_controller.get_all()
 
 
-@router.put(path="/{uid}", response_model=SubscriptionResponse)
+@subscriptions_router.put("/{uid}", response_model=SubscriptionResponse)
 def update_subscription(uid: str, subscription_data: SubscriptionSchema) -> SubscriptionResponse:
     """Update subscription"""
-    existing_subscription: Optional[Subscription] = subscription_repo.get_by_id(uid=uid)
-    if not existing_subscription:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subscription not found")
-    
-    user: Optional[User] = user_repo.get_by_id(uid=subscription_data.user_uid)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    
-    category: Optional[Category] = category_repo.get_by_id(uid=subscription_data.category_uid)
-    if not category:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
-    
-    subscription: Subscription = Subscription(
-        uid=uid,
-        name=subscription_data.name,
-        amount=subscription_data.amount,
-        interval=Interval(value=subscription_data.interval),
-        multiplier=subscription_data.multiplier,
-        user=user,
-        category=category,
-        active=subscription_data.active
-    )
-    try:
-        success: bool = subscription_repo.update(entity=subscription)
-        if not success:
-            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Update failed")
-    except DuplicateEntityError as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(e))
-    
-    return SubscriptionResponse(
-        uid=subscription.uid,
-        name=subscription.name,
-        amount=subscription.amount,
-        interval=subscription.interval.value,
-        multiplier=subscription.multiplier,
-        user_uid=user.uid,
-        user_name=user.name,
-        category_uid=category.uid,
-        category_name=category.name,
-        active=subscription.active
-    )
+    return subscription_controller.update(uid, data=subscription_data)
 
 
-@router.delete(path="/{uid}", status_code=status.HTTP_204_NO_CONTENT)
+@subscriptions_router.delete("/{uid}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_subscription(uid: str) -> None:
     """Delete subscription"""
-    success: bool = subscription_repo.delete(uid=uid)
-    if not success:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Subscription not found")
-
-@router.get(path="/export/csv", response_class=Response)
-def export_subscriptions_csv() -> Response:
-    """Export all subscriptions to CSV"""
-    csv_content: str = subscription_service.export_to_csv()
-    return Response(
-        content=csv_content,
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=subscriptions.csv"}
-    )
+    subscription_controller.delete(uid)
 
 
-@router.post(path="/import/csv", status_code=status.HTTP_201_CREATED)
-def import_subscriptions_csv(file_content: str = Body(default=..., embed=True)) -> dict[str, Any]:
-    """Import subscriptions from CSV"""
-    return subscription_service.import_from_csv(csv_content=file_content)
+# Subscription Instance Routes
+@subscription_instances_router.post("/", response_model=SubscriptionInstanceResponse, status_code=status.HTTP_201_CREATED)
+def create_subscription_instance(instance_data: SubscriptionInstanceSchema) -> SubscriptionInstanceResponse:
+    """Create a new subscription instance"""
+    return subscription_instance_controller.create(data=instance_data)
+
+
+@subscription_instances_router.get("/{uid}", response_model=SubscriptionInstanceResponse)
+def get_subscription_instance(uid: str) -> SubscriptionInstanceResponse:
+    """Get subscription instance by ID"""
+    return subscription_instance_controller.get_by_id(uid)
+
+
+@subscription_instances_router.get("/", response_model=list[SubscriptionInstanceResponse])
+def get_all_subscription_instances() -> list[SubscriptionInstanceResponse]:
+    """Get all subscription instances"""
+    return subscription_instance_controller.get_all()
+
+
+@subscription_instances_router.put("/{uid}", response_model=SubscriptionInstanceResponse)
+def update_subscription_instance(uid: str, instance_data: SubscriptionInstanceSchema) -> SubscriptionInstanceResponse:
+    """Update subscription instance"""
+    return subscription_instance_controller.update(uid, data=instance_data)
+
+
+@subscription_instances_router.delete("/{uid}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_subscription_instance(uid: str) -> None:
+    """Delete subscription instance"""
+    subscription_instance_controller.delete(uid)
+
+# Made with Bob

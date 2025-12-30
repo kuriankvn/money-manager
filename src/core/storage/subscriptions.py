@@ -15,6 +15,8 @@ def init_subscription_tables() -> None:
             amount REAL NOT NULL,
             frequency TEXT NOT NULL CHECK (frequency IN ('monthly', 'yearly')),
             interval INTEGER NOT NULL,
+            due_day INTEGER NOT NULL,
+            due_month INTEGER,
             status TEXT NOT NULL CHECK (status IN ('active', 'cancelled')))
     """)
     

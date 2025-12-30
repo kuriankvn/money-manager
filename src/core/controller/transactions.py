@@ -1,154 +1,204 @@
-from typing import Any, Optional
-from fastapi import APIRouter, HTTPException, status, Body
-from fastapi.responses import Response
-from core.repositories import TransactionRepository, UserRepository, CategoryRepository
-from core.domain import Transaction, TransactionType, User, Category, TransactionSchema, TransactionResponse
-from core.utils import generate_uid
-from core.services import TransactionService
-
-router: APIRouter = APIRouter(prefix="/transactions", tags=["transactions"])
-transaction_repo: TransactionRepository = TransactionRepository()
-user_repo: UserRepository = UserRepository()
-category_repo: CategoryRepository = CategoryRepository()
-transaction_service: TransactionService = TransactionService()
+from typing import Optional
+from fastapi import APIRouter, status, HTTPException
+from core.repositories import CategoryRepository, AccountRepository, TransactionRepository
+from core.domain import Category, Account, Transaction
+from core.domain import CategorySchema, CategoryResponse, AccountSchema, AccountResponse, TransactionSchema, TransactionResponse
+from core.controller.base import BaseController
 
 
-@router.post(path="/", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
+# Category Controller
+class CategoryController(BaseController[Category, CategorySchema, CategoryResponse]):
+    """Category controller with CRUD operations"""
+    
+    def __init__(self) -> None:
+        self._repository = CategoryRepository()
+    
+    @property
+    def repository(self) -> CategoryRepository:
+        return self._repository
+    
+    @property
+    def entity_name(self) -> str:
+        return "Category"
+    
+    def model_to_entity(self, uid: str, model: CategorySchema) -> Category:
+        return Category(uid=uid, name=model.name)
+    
+    def entity_to_response(self, entity: Category) -> CategoryResponse:
+        return CategoryResponse(uid=entity.uid, name=entity.name)
+
+
+# Account Controller
+class AccountController(BaseController[Account, AccountSchema, AccountResponse]):
+    """Account controller with CRUD operations"""
+    
+    def __init__(self) -> None:
+        self._repository = AccountRepository()
+    
+    @property
+    def repository(self) -> AccountRepository:
+        return self._repository
+    
+    @property
+    def entity_name(self) -> str:
+        return "Account"
+    
+    def model_to_entity(self, uid: str, model: AccountSchema) -> Account:
+        return Account(uid=uid, name=model.name)
+    
+    def entity_to_response(self, entity: Account) -> AccountResponse:
+        return AccountResponse(uid=entity.uid, name=entity.name)
+
+
+# Transaction Controller
+class TransactionController(BaseController[Transaction, TransactionSchema, TransactionResponse]):
+    """Transaction controller with CRUD operations"""
+    
+    def __init__(self) -> None:
+        self._repository = TransactionRepository()
+        self.account_repo = AccountRepository()
+        self.category_repo = CategoryRepository()
+    
+    @property
+    def repository(self) -> TransactionRepository:
+        return self._repository
+    
+    @property
+    def entity_name(self) -> str:
+        return "Transaction"
+    
+    def validate_dependencies(self, model: TransactionSchema) -> None:
+        """Validate account and category exist"""
+        account: Optional[Account] = self.account_repo.get_by_id(uid=model.account_id)
+        if not account:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Account not found")
+        
+        category: Optional[Category] = self.category_repo.get_by_id(uid=model.category_id)
+        if not category:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
+    
+    def model_to_entity(self, uid: str, model: TransactionSchema) -> Transaction:
+        return Transaction(
+            uid=uid,
+            name=model.name,
+            amount=model.amount,
+            date=model.date,
+            account_id=model.account_id,
+            category_id=model.category_id
+        )
+    
+    def entity_to_response(self, entity: Transaction) -> TransactionResponse:
+        return TransactionResponse(
+            uid=entity.uid,
+            name=entity.name,
+            amount=entity.amount,
+            date=entity.date,
+            account_id=entity.account_id,
+            category_id=entity.category_id
+        )
+
+
+# Initialize controllers and routers
+category_controller: CategoryController = CategoryController()
+categories_router: APIRouter = APIRouter(prefix="/categories", tags=["categories"])
+
+account_controller: AccountController = AccountController()
+accounts_router: APIRouter = APIRouter(prefix="/accounts", tags=["accounts"])
+
+transaction_controller: TransactionController = TransactionController()
+transactions_router: APIRouter = APIRouter(prefix="/transactions", tags=["transactions"])
+
+
+# Category Routes
+@categories_router.post("/", response_model=CategoryResponse, status_code=status.HTTP_201_CREATED)
+def create_category(category_data: CategorySchema) -> CategoryResponse:
+    """Create a new category"""
+    return category_controller.create(data=category_data)
+
+
+@categories_router.get("/{uid}", response_model=CategoryResponse)
+def get_category(uid: str) -> CategoryResponse:
+    """Get category by ID"""
+    return category_controller.get_by_id(uid)
+
+
+@categories_router.get("/", response_model=list[CategoryResponse])
+def get_all_categories() -> list[CategoryResponse]:
+    """Get all categories"""
+    return category_controller.get_all()
+
+
+@categories_router.put("/{uid}", response_model=CategoryResponse)
+def update_category(uid: str, category_data: CategorySchema) -> CategoryResponse:
+    """Update category"""
+    return category_controller.update(uid, data=category_data)
+
+
+@categories_router.delete("/{uid}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_category(uid: str) -> None:
+    """Delete category"""
+    category_controller.delete(uid)
+
+
+# Account Routes
+@accounts_router.post("/", response_model=AccountResponse, status_code=status.HTTP_201_CREATED)
+def create_account(account_data: AccountSchema) -> AccountResponse:
+    """Create a new account"""
+    return account_controller.create(data=account_data)
+
+
+@accounts_router.get("/{uid}", response_model=AccountResponse)
+def get_account(uid: str) -> AccountResponse:
+    """Get account by ID"""
+    return account_controller.get_by_id(uid)
+
+
+@accounts_router.get("/", response_model=list[AccountResponse])
+def get_all_accounts() -> list[AccountResponse]:
+    """Get all accounts"""
+    return account_controller.get_all()
+
+
+@accounts_router.put("/{uid}", response_model=AccountResponse)
+def update_account(uid: str, account_data: AccountSchema) -> AccountResponse:
+    """Update account"""
+    return account_controller.update(uid, data=account_data)
+
+
+@accounts_router.delete("/{uid}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_account(uid: str) -> None:
+    """Delete account"""
+    account_controller.delete(uid)
+
+
+# Transaction Routes
+@transactions_router.post("/", response_model=TransactionResponse, status_code=status.HTTP_201_CREATED)
 def create_transaction(transaction_data: TransactionSchema) -> TransactionResponse:
     """Create a new transaction"""
-    user: Optional[User] = user_repo.get_by_id(uid=transaction_data.user_uid)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    
-    category: Optional[Category] = category_repo.get_by_id(uid=transaction_data.category_uid)
-    if not category:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
-    
-    uid: str = generate_uid()
-    transaction: Transaction = Transaction(
-        uid=uid,
-        name=transaction_data.name,
-        amount=transaction_data.amount,
-        date=transaction_data.date,
-        type=TransactionType(value=transaction_data.type),
-        user=user,
-        category=category
-    )
-    transaction_repo.create(entity=transaction)
-    return TransactionResponse(
-        uid=transaction.uid,
-        name=transaction.name,
-        amount=transaction.amount,
-        date=transaction.date,
-        type=transaction.type.value,
-        user_uid=user.uid,
-        user_name=user.name,
-        category_uid=category.uid,
-        category_name=category.name
-    )
+    return transaction_controller.create(transaction_data)
 
 
-@router.get(path="/{uid}", response_model=TransactionResponse)
+@transactions_router.get("/{uid}", response_model=TransactionResponse)
 def get_transaction(uid: str) -> TransactionResponse:
     """Get transaction by ID"""
-    transaction: Optional[Transaction] = transaction_repo.get_by_id(uid=uid)
-    if not transaction:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
-    return TransactionResponse(
-        uid=transaction.uid,
-        name=transaction.name,
-        amount=transaction.amount,
-        date=transaction.date,
-        type=transaction.type.value,
-        user_uid=transaction.user.uid,
-        user_name=transaction.user.name,
-        category_uid=transaction.category.uid,
-        category_name=transaction.category.name
-    )
+    return transaction_controller.get_by_id(uid)
 
 
-@router.get(path="/", response_model=list[TransactionResponse])
+@transactions_router.get("/", response_model=list[TransactionResponse])
 def get_all_transactions() -> list[TransactionResponse]:
     """Get all transactions"""
-    transactions: list[Transaction] = transaction_repo.get_all()
-    return [
-        TransactionResponse(
-            uid=txn.uid,
-            name=txn.name,
-            amount=txn.amount,
-            date=txn.date,
-            type=txn.type.value,
-            user_uid=txn.user.uid,
-            user_name=txn.user.name,
-            category_uid=txn.category.uid,
-            category_name=txn.category.name
-        )
-        for txn in transactions
-    ]
+    return transaction_controller.get_all()
 
 
-@router.put(path="/{uid}", response_model=TransactionResponse)
+@transactions_router.put("/{uid}", response_model=TransactionResponse)
 def update_transaction(uid: str, transaction_data: TransactionSchema) -> TransactionResponse:
     """Update transaction"""
-    existing_transaction: Optional[Transaction] = transaction_repo.get_by_id(uid=uid)
-    if not existing_transaction:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
-    
-    user: Optional[User] = user_repo.get_by_id(uid=transaction_data.user_uid)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    
-    category: Optional[Category] = category_repo.get_by_id(uid=transaction_data.category_uid)
-    if not category:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Category not found")
-    
-    transaction: Transaction = Transaction(
-        uid=uid,
-        name=transaction_data.name,
-        amount=transaction_data.amount,
-        date=transaction_data.date,
-        type=TransactionType(value=transaction_data.type),
-        user=user,
-        category=category
-    )
-    success: bool = transaction_repo.update(entity=transaction)
-    if not success:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Update failed")
-    
-    return TransactionResponse(
-        uid=transaction.uid,
-        name=transaction.name,
-        amount=transaction.amount,
-        date=transaction.date,
-        type=transaction.type.value,
-        user_uid=user.uid,
-        user_name=user.name,
-        category_uid=category.uid,
-        category_name=category.name
-    )
+    return transaction_controller.update(uid, data=transaction_data)
 
 
-@router.delete(path="/{uid}", status_code=status.HTTP_204_NO_CONTENT)
+@transactions_router.delete("/{uid}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_transaction(uid: str) -> None:
     """Delete transaction"""
-    success: bool = transaction_repo.delete(uid=uid)
-    if not success:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
+    transaction_controller.delete(uid)
 
-
-
-@router.get(path="/export/csv", response_class=Response)
-def export_transactions_csv() -> Response:
-    """Export all transactions to CSV"""
-    csv_content: str = transaction_service.export_to_csv()
-    return Response(
-        content=csv_content,
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=transactions.csv"}
-    )
-
-
-@router.post(path="/import/csv", status_code=status.HTTP_201_CREATED)
-def import_transactions_csv(file_content: str = Body(default=..., embed=True)) -> dict[str, Any]:
-    """Import transactions from CSV"""
-    return transaction_service.import_from_csv(csv_content=file_content)
+# Made with Bob
