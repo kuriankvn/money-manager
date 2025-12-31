@@ -187,6 +187,8 @@ class TestInvestmentPlanAPI(unittest.TestCase):
             'amount': 500.0,
             'frequency': 'monthly',
             'interval': 1,
+            'due_day': 15,
+            'due_month': None,
             'status': 'active'
         })
         self.assertEqual(response.status_code, 201)
@@ -200,6 +202,8 @@ class TestInvestmentPlanAPI(unittest.TestCase):
             'amount': 500.0,
             'frequency': 'monthly',
             'interval': 1,
+            'due_day': 15,
+            'due_month': None,
             'status': 'active'
         })
         uid = create_response.json()['uid']
@@ -211,11 +215,13 @@ class TestInvestmentPlanAPI(unittest.TestCase):
     def test_get_all(self) -> None:
         self.client.post('/investment-plans/', json={
             'investment_id': self.investment_uid, 'amount': 500.0,
-            'frequency': 'monthly', 'interval': 1, 'status': 'active'
+            'frequency': 'monthly', 'interval': 1, 'due_day': 15,
+            'due_month': None, 'status': 'active'
         })
         self.client.post('/investment-plans/', json={
             'investment_id': self.investment_uid, 'amount': 1000.0,
-            'frequency': 'yearly', 'interval': 1, 'status': 'active'
+            'frequency': 'yearly', 'interval': 1, 'due_day': 1,
+            'due_month': 1, 'status': 'active'
         })
         
         response = self.client.get('/investment-plans/')
@@ -225,13 +231,15 @@ class TestInvestmentPlanAPI(unittest.TestCase):
     def test_update(self) -> None:
         create_response = self.client.post('/investment-plans/', json={
             'investment_id': self.investment_uid, 'amount': 500.0,
-            'frequency': 'monthly', 'interval': 1, 'status': 'active'
+            'frequency': 'monthly', 'interval': 1, 'due_day': 15,
+            'due_month': None, 'status': 'active'
         })
         uid = create_response.json()['uid']
         
         response = self.client.put(f'/investment-plans/{uid}', json={
             'investment_id': self.investment_uid, 'amount': 500.0,
-            'frequency': 'monthly', 'interval': 1, 'status': 'closed'
+            'frequency': 'monthly', 'interval': 1, 'due_day': 15,
+            'due_month': None, 'status': 'closed'
         })
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()['status'], 'closed')
@@ -239,7 +247,8 @@ class TestInvestmentPlanAPI(unittest.TestCase):
     def test_delete(self) -> None:
         create_response = self.client.post('/investment-plans/', json={
             'investment_id': self.investment_uid, 'amount': 500.0,
-            'frequency': 'monthly', 'interval': 1, 'status': 'active'
+            'frequency': 'monthly', 'interval': 1, 'due_day': 15,
+            'due_month': None, 'status': 'active'
         })
         uid = create_response.json()['uid']
         
@@ -269,6 +278,8 @@ class TestInvestmentPlanInstanceAPI(unittest.TestCase):
             'amount': 500.0,
             'frequency': 'monthly',
             'interval': 1,
+            'due_day': 15,
+            'due_month': None,
             'status': 'active'
         })
         self.plan_uid = plan_response.json()['uid']

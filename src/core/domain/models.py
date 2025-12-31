@@ -145,7 +145,19 @@ class InvestmentPlanSchema(BaseModel):
     amount: float = Field(default=..., gt=0)
     frequency: Frequency
     interval: int = Field(default=..., gt=0)
+    due_day: int = Field(default=..., gt=0, lt=32)
+    due_month: Optional[int] = Field(default=None, gt=0, lt=13)
     status: InvestmentPlanStatus
+
+    @model_validator(mode="after")
+    def validate_due_month(self) -> Any:
+        freq: str = self.frequency
+        due_month: Optional[int] = self.due_month
+        if freq == "monthly" and due_month is not None:
+            raise ValueError("due_month must be null for monthly investment plans")
+        if freq == "yearly" and due_month is None:
+            raise ValueError("due_month is required for yearly investment plans")
+        return self
 
 
 class InvestmentPlanResponse(BaseModel):
@@ -156,6 +168,8 @@ class InvestmentPlanResponse(BaseModel):
     amount: float
     frequency: Frequency
     interval: int
+    due_day: int
+    due_month: Optional[int]
     status: InvestmentPlanStatus
 
 

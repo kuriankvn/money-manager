@@ -51,11 +51,11 @@ class InvestmentPlanRepository(BaseRepository[InvestmentPlan]):
     
     @property
     def columns(self) -> list[str]:
-        return ["investment_id", "amount", "frequency", "interval", "status"]
+        return ["investment_id", "amount", "frequency", "interval", "due_day", "due_month", "status"]
     
     def _entity_to_values(self, entity: InvestmentPlan) -> tuple[Any, ...]:
         return (entity.uid, entity.investment_id, entity.amount, entity.frequency.value,
-                entity.interval, entity.status.value)
+                entity.interval, entity.due_day, entity.due_month, entity.status.value)
     
     def _row_to_entity(self, row: tuple[Any, ...]) -> InvestmentPlan:
         return InvestmentPlan(
@@ -64,7 +64,9 @@ class InvestmentPlanRepository(BaseRepository[InvestmentPlan]):
             amount=row[2],
             frequency=Frequency(value=row[3]),
             interval=row[4],
-            status=InvestmentPlanStatus(value=row[5]))
+            due_day=row[5],
+            due_month=row[6],
+            status=InvestmentPlanStatus(value=row[7]))
 
 
 class InvestmentPlanInstanceRepository(BaseRepository[InvestmentPlanInstance]):

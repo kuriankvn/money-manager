@@ -195,6 +195,8 @@ class TestInvestmentPlanRepository(unittest.TestCase):
             amount=1000.0,
             frequency=Frequency.MONTHLY,
             interval=1,
+            due_day=15,
+            due_month=None,
             status=InvestmentPlanStatus.ACTIVE
         )
         uid = self.repo.create(plan)
@@ -207,6 +209,8 @@ class TestInvestmentPlanRepository(unittest.TestCase):
             amount=1000.0,
             frequency=Frequency.MONTHLY,
             interval=1,
+            due_day=15,
+            due_month=None,
             status=InvestmentPlanStatus.ACTIVE
         )
         self.repo.create(plan)
@@ -216,10 +220,12 @@ class TestInvestmentPlanRepository(unittest.TestCase):
     def test_get_all(self) -> None:
         plan1 = InvestmentPlan(uid='plan-3', investment_id=self.investment.uid,
                               amount=1000.0, frequency=Frequency.MONTHLY,
-                              interval=1, status=InvestmentPlanStatus.ACTIVE)
+                              interval=1, due_day=15, due_month=None,
+                              status=InvestmentPlanStatus.ACTIVE)
         plan2 = InvestmentPlan(uid='plan-4', investment_id=self.investment.uid,
                               amount=5000.0, frequency=Frequency.YEARLY,
-                              interval=1, status=InvestmentPlanStatus.ACTIVE)
+                              interval=1, due_day=1, due_month=1,
+                              status=InvestmentPlanStatus.ACTIVE)
         self.repo.create(plan1)
         self.repo.create(plan2)
         plans = self.repo.get_all()
@@ -232,6 +238,8 @@ class TestInvestmentPlanRepository(unittest.TestCase):
             amount=1000.0,
             frequency=Frequency.MONTHLY,
             interval=1,
+            due_day=15,
+            due_month=None,
             status=InvestmentPlanStatus.ACTIVE
         )
         self.repo.create(plan)
@@ -246,6 +254,8 @@ class TestInvestmentPlanRepository(unittest.TestCase):
             amount=1000.0,
             frequency=Frequency.MONTHLY,
             interval=1,
+            due_day=15,
+            due_month=None,
             status=InvestmentPlanStatus.ACTIVE
         )
         self.repo.create(plan)
@@ -279,6 +289,8 @@ class TestInvestmentPlanInstanceRepository(unittest.TestCase):
             amount=1000.0,
             frequency=Frequency.MONTHLY,
             interval=1,
+            due_day=15,
+            due_month=None,
             status=InvestmentPlanStatus.ACTIVE
         )
         self.plan_repo.create(self.plan)

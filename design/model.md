@@ -25,6 +25,8 @@ Subscription
 - amount
 - frequency (monthly, yearly)
 - interval
+- due_day
+- due_month (nullable, required for yearly)
 - status (active, cancelled)
 
 SubscriptionInstance
@@ -56,6 +58,8 @@ InvestmentPlan
 - amount
 - frequency (monthly, yearly)
 - interval
+- due_day
+- due_month (nullable, required for yearly)
 - status (active, closed)
 
 InvestmentPlanInstance

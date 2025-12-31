@@ -79,6 +79,8 @@ class InvestmentPlan:
     amount: float
     frequency: Frequency
     interval: int
+    due_day: int
+    due_month: Optional[int]
     status: InvestmentPlanStatus
 
 

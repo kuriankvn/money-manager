@@ -116,6 +116,8 @@ class InvestmentPlanController(BaseController[InvestmentPlan, InvestmentPlanSche
             amount=model.amount,
             frequency=model.frequency,
             interval=model.interval,
+            due_day=model.due_day,
+            due_month=model.due_month,
             status=model.status
         )
     
@@ -126,6 +128,8 @@ class InvestmentPlanController(BaseController[InvestmentPlan, InvestmentPlanSche
             amount=entity.amount,
             frequency=entity.frequency,
             interval=entity.interval,
+            due_day=entity.due_day,
+            due_month=entity.due_month,
             status=entity.status
         )
 
